@@ -34,12 +34,13 @@
 
         <Button
             android:layout_width="67dp"
+            android:id="@+id/more_function_btn"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="5dp"
             android:background="@drawable/title_btn_right"
-            android:text="群聊"
+            android:text="更多"
             android:textColor="#fff"
             android:textSize="15dp" />
     </RelativeLayout>

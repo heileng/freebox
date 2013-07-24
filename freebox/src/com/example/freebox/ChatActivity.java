@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.example.freebox.adapter.ChatMsgViewAdapter;
+import com.example.freebox.config.Flags;
 import com.example.freebox.entity.ChatMsgEntity;
 import com.example.freebox.ui.Expressions;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -285,7 +287,7 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 				intent.putExtra("dialog_type", "friend_dialog");
 				intent.putExtra("name", title_name);
 				startActivity(intent);
-			}else if(chat_type.equals("multi")){
+			} else if (chat_type.equals("multi")) {
 				Intent intent = new Intent(ChatActivity.this,
 						MainTopRightDialog.class);
 				intent.putExtra("dialog_type", "quanquan_dialog");
@@ -329,13 +331,17 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		Intent intent = new Intent(ChatActivity.this, ProfileActivity.class);
 		switch (v.getId()) {
 		case R.id.iv_userhead:
-
 			intent.putExtra("name", title_name);
+			intent.putExtra("from", Flags.FromFriend);
 			startActivity(intent);
 			break;
 		case R.id.iv_myuserhead:
 			Log.i("输出", "点击了我自己的头像");
-			intent.putExtra("name", "黑棱");
+			SharedPreferences sharedPreferences = getSharedPreferences(
+					"user_config", Context.MODE_PRIVATE);
+			String username = sharedPreferences.getString("user_name", "none");
+			intent.putExtra("name", username);
+			intent.putExtra("from", Flags.FromMe);
 			startActivity(intent);
 			break;
 		}

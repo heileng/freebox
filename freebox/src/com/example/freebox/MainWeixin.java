@@ -1,22 +1,39 @@
 package com.example.freebox;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.example.freebox.ProfileActivity.DataGetTask;
 import com.example.freebox.adapter.AddressListAdapter;
 import com.example.freebox.adapter.ContactAdapter;
 import com.example.freebox.adapter.MessageAdapter;
 import com.example.freebox.adapter.QuanQuanAdapter;
 import com.example.freebox.adapter.UniteAdapter;
+import com.example.freebox.config.Flags;
+import com.example.freebox.connection.APILinkEntity;
+import com.example.freebox.connection.HttpClientEntity;
 import com.example.freebox.entity.MessageEntity;
 import com.example.freebox.entity.QuanQuanEntity;
 import com.example.freebox.ui.SideBar;
 import com.example.freebox.utils.DataGetHelper;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -37,7 +54,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -48,7 +64,6 @@ import android.widget.Toast;
 public class MainWeixin extends Activity {
 
 	public static MainWeixin instance = null;
-
 	private ViewPager mTabPager;
 	private ImageView mTabImg;// 动画图片
 	private ImageView mTab1, mTab2, mTab3, mTab4, mTab5;
@@ -74,7 +89,10 @@ public class MainWeixin extends Activity {
 	private SideBar indexBar;
 	private WindowManager mWindowManager;
 	private TextView mDialogText;
-	private Button address_back_btn;
+	private Button address_back_btn, more_function_btn;
+	public UrlEncodedFormEntity paramsEntity;
+	private HttpClientEntity mClient = new HttpClientEntity();
+	private DataGetTask task;
 
 	// ideas搜索界面
 	private GridView flaggrid;
@@ -86,7 +104,6 @@ public class MainWeixin extends Activity {
 	private List<String> lstData;
 
 	// private Button mRightBtn;
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -96,7 +113,6 @@ public class MainWeixin extends Activity {
 		getWindow().setSoftInputMode(
 				WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-
 		instance = this;
 		/*
 		 * mRightBtn = (Button) findViewById(R.id.right_btn);
@@ -142,7 +158,6 @@ public class MainWeixin extends Activity {
 		// 通讯录界面控件部分
 		address_back_btn = (Button) view2.findViewById(R.id.btn_back);
 		address_back_btn.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
@@ -151,6 +166,19 @@ public class MainWeixin extends Activity {
 				lvMyQuanQuan.setVisibility(View.INVISIBLE);
 				address_back_btn.setVisibility(View.INVISIBLE);
 				lvAddressGroup.setVisibility(View.VISIBLE);
+			}
+
+		});
+		more_function_btn = (Button) view2.findViewById(R.id.more_function_btn);
+		more_function_btn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent = new Intent(MainWeixin.this,
+						MainTopRightDialog.class);
+				intent.putExtra("dialog_type", "address_dialog");
+				startActivity(intent);
 			}
 
 		});
@@ -225,6 +253,8 @@ public class MainWeixin extends Activity {
 			}
 
 		});
+		task = new DataGetTask();
+		task.execute(APILinkEntity.mBasicAPI);
 		lvContact = (ListView) view2.findViewById(R.id.lvContact);
 		lvContact.setAdapter(new ContactAdapter(this));
 		lvContact.setOnItemClickListener(new OnItemClickListener() {
@@ -241,9 +271,7 @@ public class MainWeixin extends Activity {
 				intent.putExtra("name", user_name_text);
 				intent.setClass(MainWeixin.this, ProfileActivity.class);
 				startActivity(intent);
-
 			}
-
 		});
 		indexBar = (SideBar) view2.findViewById(R.id.sideBar);
 		indexBar.setListView(lvContact);
@@ -339,6 +367,63 @@ public class MainWeixin extends Activity {
 		};
 
 		mTabPager.setAdapter(mPagerAdapter);
+	}
+
+	//获取列表
+	public class DataGetTask extends AsyncTask<String, String, String> {
+
+		@Override
+		protected String doInBackground(String... arg0) {
+			String result = null;
+			Log.i("开始后台获取", "开始task");
+			try {
+
+				SharedPreferences sharedPreferences = getSharedPreferences(
+						"user_config", Context.MODE_PRIVATE);
+				String token = sharedPreferences
+						.getString("auth_token", "none");
+				Log.i("第二次token", token);
+				List<NameValuePair> params1 = new ArrayList<NameValuePair>();
+				params1.add(new BasicNameValuePair("method",
+						APILinkEntity.mGetFriendsListMethod));
+				params1.add(new BasicNameValuePair("api_key", Flags.APIKEY));
+				params1.add(new BasicNameValuePair("auth_token", token));
+				params1.add(new BasicNameValuePair("t", token));
+				params1.add(new BasicNameValuePair("1", null));
+				params1.add(new BasicNameValuePair("o", null));
+				try {
+					paramsEntity = new UrlEncodedFormEntity(params1, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				result = mClient.PostData(arg0[0], paramsEntity);
+				Log.i("输出回执", result);
+
+			} catch (ClientProtocolException e) {
+
+				e.printStackTrace();
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			} catch (JSONException e) {
+
+				e.printStackTrace();
+			}
+			return result;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			try {
+				JSONObject jsonobject =new JSONObject(result);
+				String data_list=jsonobject.getString("result");
+				JSONObject jsonobject2=new JSONObject(data_list);
+				JSONArray friend_group=jsonobject2.getJSONArray("d");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private void findView() {
@@ -546,12 +631,13 @@ public class MainWeixin extends Activity {
 				mCloseBtn.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View arg0) {
-						// Toast.makeText(Main.this, "退出",
-						// Toast.LENGTH_LONG).show();
-						Intent intent = new Intent();
-						// intent.setClass(MainWeixin.this,Exit.class);
-						// startActivity(intent);
-						menuWindow.dismiss(); // 响应点击事件之后关闭Menu
+						Toast.makeText(MainWeixin.this, "退出", Toast.LENGTH_LONG)
+								.show();
+						ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+						manager.restartPackage(getPackageName());
+						MainWeixin.this.finish();
+						// menuWindow.dismiss(); // 响应点击事件之后关闭Menu
+
 					}
 				});
 				menu_display = true;
@@ -606,4 +692,5 @@ public class MainWeixin extends Activity {
 	// Intent intent = new Intent (MainWeixin.this,ShakeActivity.class);
 	// startActivity(intent);
 	// }
+
 }
