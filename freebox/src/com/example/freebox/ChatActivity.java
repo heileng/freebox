@@ -1,23 +1,51 @@
 package com.example.freebox;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.example.freebox.MyProfileEditActivity.DataGetTask;
 import com.example.freebox.adapter.ChatMsgViewAdapter;
+import com.example.freebox.adapter.ContactAdapter;
+import com.example.freebox.adapter.UniteAdapter;
 import com.example.freebox.config.Flags;
+import com.example.freebox.connection.APILinkEntity;
+import com.example.freebox.connection.HttpClientEntity;
+import com.example.freebox.data.JSONMessageEntity;
 import com.example.freebox.entity.ChatMsgEntity;
+import com.example.freebox.entity.UserEntity;
+import com.example.freebox.push.DataHandler;
 import com.example.freebox.ui.Expressions;
+import com.example.freebox.utils.DataBaseHandler;
+import com.example.freebox.utils.DataGetHelper;
+import com.example.freebox.utils.DatabaseHelper;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -69,17 +97,27 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 	private GridView gView1;
 	private GridView gView2;
 	private GridView gView3;
-	private String title_name, chat_type;
+	private String title_name;
+	public static String chat_type;
 	private ChatMsgViewAdapter mAdapter;
+	private int mQuanId;
+	private int mguid;
+	private int userid;
+	private String username;
 	private List<ChatMsgEntity> mDataArrays = new ArrayList<ChatMsgEntity>();
-	private String[] msgArray = new String[] { "在不在啊？", "有！你呢？", "我也有", "那上吧",
-			"好的", "你在哪呢？", "你猜。。", "尼滚....", };
+	private String[] msgArray = new String[] { "在不在啊？", "有！你呢？" };
 
 	private String[] dateArray = new String[] { "2012-12-09 18:00",
-			"2012-12-09 18:10", "2012-12-09 18:11", "2012-12-09 18:20",
-			"2012-12-09 18:30", "2012-12-09 18:35", "2012-12-09 18:40",
-			"2012-12-09 18:50" };
+			"2012-12-09 18:10" };
 	private final static int COUNT = 8;
+
+	private Handler mHandler;
+
+	// 网络获取
+	private UrlEncodedFormEntity paramsEntity;
+	private HttpClientEntity mClient = new HttpClientEntity();;
+	private DataGetTask task;
+	private DataBaseHandler mDataBaseHandler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +130,14 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		Intent intent = getIntent();
 		chat_type = intent.getStringExtra("chat_type");
 		title_name = intent.getStringExtra("name");
+		mguid = intent.getIntExtra("user_guid", 0);
+		mQuanId = intent.getIntExtra("quan_guid", 0);
+
+		SharedPreferences sharedPreferences = getSharedPreferences(
+				"user_config", Context.MODE_PRIVATE);
+		userid = sharedPreferences.getInt("user_guid", 0);
+		username = sharedPreferences.getString("user_name", "none");
+		Log.i("圈圈ID", "点击了圈圈id" + mQuanId);
 		// mTitleText=(TextView)findViewById(R.id.chat_title_name);
 		ll_fasong = (LinearLayout) findViewById(R.id.ll_fasong);
 		ll_yuyin = (LinearLayout) findViewById(R.id.ll_yuyin);
@@ -107,6 +153,26 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		expressionImageNames1 = Expressions.expressionImgNames1;
 		expressionImages2 = Expressions.expressionImgs2;
 		expressionImageNames2 = Expressions.expressionImgNames2;
+
+		mHandler = new Handler() {
+			public void handleMessage(Message msg) {// 此方法在ui线程运行
+				switch (msg.what) {
+				case Flags.MSG_NEW_FRIEND_MESSAGE:
+					if (chat_type.equals("two")) {
+						updateNewMessageData();
+						Toast.makeText(ChatActivity.this, "收到一条新的好友消息",
+								Toast.LENGTH_SHORT).show();
+					}
+					break;
+				case Flags.MSG_NEW_QUAN_MESSAGE:
+					if (chat_type.equals("multi")) {
+						Toast.makeText(ChatActivity.this, "收到一条新的圈圈消息",
+								Toast.LENGTH_SHORT).show();
+					}
+					break;
+				}
+			}
+		};
 		// 创建ViewPager
 		viewPager = (ViewPager) findViewById(R.id.viewpager);
 		// 发送
@@ -135,10 +201,10 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		biaoqingBtn.setOnClickListener(this);
 		biaoqingfocuseBtn = (ImageButton) findViewById(R.id.chatting_biaoqing_focuse_btn);
 		biaoqingfocuseBtn.setOnClickListener(this);
-
 		mEditTextContent = (EditText) findViewById(R.id.et_sendmessage);
 		initViewPager();
-		initData();
+		setChatMessageData();
+//		initData();
 	}
 
 	private void initViewPager() {
@@ -225,7 +291,7 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 				entity.setName(title_name);
 				entity.setMsgType(true);
 			} else {
-				entity.setName("黑棱");
+				entity.setName(username);
 				entity.setMsgType(false);
 			}
 			entity.setText(msgArray[i]);
@@ -233,6 +299,47 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		}
 		mAdapter = new ChatMsgViewAdapter(this, mDataArrays);
 		mListView.setAdapter(mAdapter);
+	}
+
+	// 收到消息更新界面
+	private void setChatMessageData() {
+		setTitle(title_name);
+		mDataArrays.clear();
+		mDataBaseHandler = new DataBaseHandler(ChatActivity.this);
+		ArrayList<JSONMessageEntity> chatListEntity = new ArrayList<JSONMessageEntity>();
+		DataBaseHandler databasehandler=new DataBaseHandler(ChatActivity.this);
+		String friend_guid=""+mguid;
+		chatListEntity=databasehandler.getCurrentUserMessageList(friend_guid);
+		for (int i = 0; i < chatListEntity.size(); i++) {
+			ChatMsgEntity entity = new ChatMsgEntity();
+			entity.setDate(chatListEntity.get(i).getStringTime());
+			entity.setName(username);
+			entity.setMsgType(false);
+			entity.setText(chatListEntity.get(i).getContent());
+			mDataArrays.add(entity);
+		}
+		viewPager.setVisibility(ViewPager.GONE);
+		page_select.setVisibility(page_select.GONE);
+		mAdapter = new ChatMsgViewAdapter(this, mDataArrays);
+		mListView.setAdapter(mAdapter);
+		mListView.setSelection(mListView.getCount() - 1);
+	}
+	private void updateNewMessageData() {
+		mDataBaseHandler = new DataBaseHandler(ChatActivity.this);
+		ArrayList<JSONMessageEntity> chatListEntity = new ArrayList<JSONMessageEntity>();
+		chatListEntity = mDataBaseHandler.getCurrentUserMessageList(username);
+		for (int i = 0; i < chatListEntity.size(); i++) {
+			ChatMsgEntity entity = new ChatMsgEntity();
+			entity.setDate(chatListEntity.get(i).getStringTime());
+			entity.setName(username);
+			entity.setMsgType(false);
+			entity.setText(chatListEntity.get(i).getContent());
+			mDataArrays.add(entity);
+		}
+		viewPager.setVisibility(ViewPager.GONE);
+		page_select.setVisibility(page_select.GONE);
+		mAdapter.notifyDataSetChanged();
+		mListView.setSelection(mListView.getCount() - 1);
 	}
 
 	private String getDate() {
@@ -259,15 +366,15 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		// break;
 		// 发送
 		case R.id.btn_send:
+
 			String content = mEditTextContent.getText().toString();
 			System.out.println("edit.get的内容 = " + content);
 			if (content.length() > 0) {
 				ChatMsgEntity entity = new ChatMsgEntity();
 				entity.setDate(getDate());
-				entity.setName("黑棱");
+				entity.setName(username);
 				entity.setMsgType(false);
 				entity.setText(content);
-
 				mDataArrays.add(entity);
 				// 更新listview
 				mEditTextContent.setText("");
@@ -275,6 +382,17 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 				page_select.setVisibility(page_select.GONE);
 				mAdapter.notifyDataSetChanged();
 				mListView.setSelection(mListView.getCount() - 1);
+				DataBaseHandler databasehandler =new DataBaseHandler(ChatActivity.this);
+				JSONMessageEntity newmymessage=new JSONMessageEntity();
+				newmymessage.setType(DataHandler.MESSAGE_TYPE_CHAT);
+				newmymessage.setCode(DataHandler.MESSAGET_CODE_PERSONAL_TALK);
+				newmymessage.setContent(content);
+				newmymessage.setSources(""+userid);
+				newmymessage.setTime(getDate());
+				newmymessage.setDest(""+mguid);
+				databasehandler.insertToMessageTable(newmymessage, "true");
+				task = new DataGetTask();
+				task.execute(APILinkEntity.mBasicAPI, content);
 			} else {
 				Toast.makeText(mCon, "不能发送空消息", Toast.LENGTH_LONG).show();
 			}
@@ -285,12 +403,16 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 				Intent intent = new Intent(ChatActivity.this,
 						ProfileActivity.class);
 				intent.putExtra("dialog_type", "friend_dialog");
-				intent.putExtra("name", title_name);
 				startActivity(intent);
 			} else if (chat_type.equals("multi")) {
-				Intent intent = new Intent(ChatActivity.this,
-						MainTopRightDialog.class);
-				intent.putExtra("dialog_type", "quanquan_dialog");
+				// Intent intent = new Intent(ChatActivity.this,
+				// MainTopRightDialog.class);
+				// intent.putExtra("dialog_type", "quanquan_dialog");
+				Intent intent = new Intent();
+				intent.setClass(ChatActivity.this, QuanProfileActivity.class);
+				intent.putExtra("quan_guid", mQuanId);
+				Log.i("圈圈guid啊啊", "" + mQuanId);
+				intent.putExtra("name", title_name);
 				startActivity(intent);
 			}
 			break;
@@ -346,6 +468,73 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 			break;
 		}
 
+	}
+
+	public class DataGetTask extends AsyncTask<String, String, String> {
+
+		@Override
+		protected String doInBackground(String... arg0) {
+			// TODO Auto-generated method stub
+			String result = null;
+			Log.i("开始后台获取", "开始task");
+			try {
+				SharedPreferences sharedPreferences = getSharedPreferences(
+						"user_config", Context.MODE_PRIVATE);
+				String token = sharedPreferences
+						.getString("auth_token", "none");
+				int userid = sharedPreferences.getInt("user_guid", 0);
+				Log.i("我的id", "" + userid);
+				List<NameValuePair> params1 = new ArrayList<NameValuePair>();
+				params1.add(new BasicNameValuePair("method",
+						APILinkEntity.mSendP2PMessageMethod));
+				params1.add(new BasicNameValuePair("api_key", Flags.APIKEY));
+				params1.add(new BasicNameValuePair("auth_token", token));
+				params1.add(new BasicNameValuePair("fguid", "" + userid));
+				params1.add(new BasicNameValuePair("tguid", "" + mguid));
+				Log.i("发送方id", "" + mguid);
+				Log.i("发送的信息", arg0[1]);
+				params1.add(new BasicNameValuePair("message", arg0[1]));
+				try {
+					StringEntity se = new StringEntity("", "UTF-8");
+					// HttpEntity httpentity=new StringEntity(params1, "UTF-8");
+					paramsEntity = new UrlEncodedFormEntity(params1);
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				result = mClient.PostData(arg0[0], paramsEntity);
+				Log.i("输出回执", result);
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return result;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+
+			try {
+				JSONObject mJSONObject;
+				mJSONObject = new JSONObject(result);
+				String resultdata = mJSONObject.getString("result");
+				JSONObject mResultobject = new JSONObject(resultdata);
+				String data = mResultobject.getString("s");
+				if (data.equals("1")) {
+					Toast.makeText(ChatActivity.this,
+							mResultobject.getString("m"), Toast.LENGTH_LONG)
+							.show();
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	// ** 指引页面改监听器 */
@@ -456,8 +645,23 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 					}
 				});
 				break;
-
 			}
+		}
+	}
+
+	public void setPushMessage(JSONMessageEntity messageentity) {
+		int code = messageentity.getCode();
+		switch (code) {
+		case Flags.MSG_P2P:
+			Message message = new Message();
+			message.what = Flags.MSG_NEW_FRIEND_MESSAGE;
+			mHandler.sendMessage(message);
+			break;
+		case Flags.MSG_Group:
+			Message message2 = new Message();
+			message2.what = Flags.MSG_NEW_QUAN_MESSAGE;
+			mHandler.sendMessage(message2);
+			break;
 		}
 	}
 

@@ -4,63 +4,165 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <Spinner
-        android:id="@+id/avatar_num_spinner"
+    <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="25dp"
-        android:background="@drawable/login_editbox"
-        android:textColor="#000"
-        android:textSize="15sp" />
+        android:layout_height="fill_parent" >
 
-    <EditText
-        android:id="@+id/nik_name_edit"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="25dp"
-        android:background="@drawable/login_editbox"
-        android:hint="昵称"
-        android:singleLine="true"
-        android:textColor="#000"
-        android:textSize="15sp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
 
-    <Spinner
-        android:id="@+id/gender_spinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="25dp"
-        android:background="@drawable/login_editbox"
-        android:textColor="#000"
-        android:textSize="15sp" />
+            <Spinner
+                android:id="@+id/avatar_num_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:textColor="#000"
+                android:textSize="15sp" />
 
-    <EditText
-        android:id="@+id/age_edit"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="25dp"
-        android:background="@drawable/login_editbox"
-        android:hint="请输入年龄"
-        android:singleLine="true"
-        android:textColor="#000"
-        android:textSize="15sp" />
+            <EditText
+                android:id="@+id/nik_name_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="昵称"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
 
-    <Spinner
-        android:id="@+id/constellation_spinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="25dp"
-        android:background="@drawable/login_editbox"
-        android:textColor="#000"
-        android:textSize="15sp" />
+            <Spinner
+                android:id="@+id/gender_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/location_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入地点"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/age_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入年龄"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/intersts_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入兴趣"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/skills_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入技能"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/contactmail_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入联系邮箱"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/phone_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入家庭联系电话"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/mobile_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入其他手机号码"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/website_edit"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:hint="请输入个人网址"
+                android:singleLine="true"
+                android:textColor="#000"
+                android:textSize="15sp" />
+
+            <Spinner
+                android:id="@+id/constellation_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_marginTop="25dp"
+                android:background="@drawable/login_editbox"
+                android:textColor="#000"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

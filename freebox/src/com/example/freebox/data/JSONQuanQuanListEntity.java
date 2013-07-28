@@ -10,4 +10,10 @@ public class JSONQuanQuanListEntity {
 	public JSONQuanQuanListItem getQuanItem(int position){
 		return mQuanList.get(position);
 	}
+	public void setQuanList(List<JSONQuanQuanListItem> quanList){
+		this.mQuanList=quanList;
+	}
+	public List<JSONQuanQuanListItem> getQuanList(){
+		return this.mQuanList;
+	}
 }

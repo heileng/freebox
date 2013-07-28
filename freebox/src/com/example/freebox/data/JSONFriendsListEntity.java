@@ -11,4 +11,10 @@ public class JSONFriendsListEntity {
 	public JSONFriendListItemEntity getFriendItem(int position){
 		return mFriendList.get(position);
 	}
+	public void setFriendList(List<JSONFriendListItemEntity> mFriendList){
+		this.mFriendList=mFriendList;
+	}
+	public List<JSONFriendListItemEntity> getFriendList(){
+		return this.mFriendList;
+	}
 }

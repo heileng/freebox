@@ -17,7 +17,10 @@ import com.example.freebox.connection.HttpClientEntity;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -97,6 +100,16 @@ public class Register extends Activity {
 						.toString()));
 				params1.add(new BasicNameValuePair("p", mPassword.getText()
 						.toString()));
+				SharedPreferences sp = PreferenceManager
+						.getDefaultSharedPreferences(Register.this);
+				String channelid = sp.getString("channelid", "none");
+				String userid = sp.getString("userid", "none");
+				String appid = sp.getString("appid", "none");
+				Log.i("百度用户id", userid);
+				Log.i("百度channelid", channelid);
+
+				params1.add(new BasicNameValuePair("buid", userid));
+				params1.add(new BasicNameValuePair("bcid", channelid));
 				try {
 					paramsEntity = new UrlEncodedFormEntity(params1, "UTF-8");
 				} catch (UnsupportedEncodingException e) {

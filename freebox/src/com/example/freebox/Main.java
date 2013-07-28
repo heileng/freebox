@@ -22,15 +22,24 @@ import com.example.freebox.adapter.UniteAdapter;
 import com.example.freebox.config.Flags;
 import com.example.freebox.connection.APILinkEntity;
 import com.example.freebox.connection.HttpClientEntity;
+import com.example.freebox.data.JSONFriendListItemEntity;
+import com.example.freebox.data.JSONFriendsListEntity;
+import com.example.freebox.data.JSONMessageEntity;
+import com.example.freebox.data.JSONQuanQuanListEntity;
+import com.example.freebox.data.JSONQuanQuanListItem;
 import com.example.freebox.entity.MessageEntity;
 import com.example.freebox.entity.QuanQuanEntity;
+import com.example.freebox.entity.UserEntity;
 import com.example.freebox.ui.SideBar;
 import com.example.freebox.utils.DataGetHelper;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -61,9 +70,9 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainWeixin extends Activity {
+public class Main extends Activity {
 
-	public static MainWeixin instance = null;
+	public static Main instance = null;
 	private ViewPager mTabPager;
 	private ImageView mTabImg;// 动画图片
 	private ImageView mTab1, mTab2, mTab3, mTab4, mTab5;
@@ -77,12 +86,44 @@ public class MainWeixin extends Activity {
 	private LinearLayout mCloseBtn;
 	private View layout;
 	private DataGetHelper mDataGetHelper;
+	private DataGetHelper mDataGetHelper2;
 	private ListView mListView;
 	private MessageAdapter mAdapter;
 	private ArrayList<MessageEntity> mMessageEntityArrays = new ArrayList<MessageEntity>();
 	private boolean menu_display = false;
 	private PopupWindow menuWindow;
 	private LayoutInflater inflater;
+
+	// 消息界面
+	private TextView mFriendMSGCountText;
+	private TextView mQuanMSGCountText;
+	private TextView mCollegeMSGCountText;
+	private TextView mAcademyMSGCountText;
+	private TextView mClassMSGCountText;
+	private TextView mSystemMSGCountText;
+	private int friendscount = 0;
+	private int quancount = 0;
+	private int collegecount = 0;
+	private int academycoount = 0;
+	private int classcount = 0;
+	private int systemcount = 0;
+
+	// 任务属性
+	private String mTaskFlagMyQuan = "myquanlist";
+	private String mTaskFlagMyFriend = "myfriendlist";
+	private String mQuanListJsonString;
+	private String mFriendListJsonString;
+	// 我的圈圈列表
+	private JSONQuanQuanListEntity mQuanListEntity = new JSONQuanQuanListEntity();
+	private JSONQuanQuanListItem mQuanItem;
+	private List<JSONQuanQuanListItem> mQuanList = new ArrayList<JSONQuanQuanListItem>();
+	private ArrayList<QuanQuanEntity> mQuanQuanEntityArrays = new ArrayList<QuanQuanEntity>();
+	// 我的好友列表
+	private JSONFriendsListEntity mFriendsListEntity = new JSONFriendsListEntity();
+	private JSONFriendListItemEntity mFriendItem;
+	private List<JSONFriendListItemEntity> mFriendList = new ArrayList<JSONFriendListItemEntity>();
+	private ArrayList<UserEntity> mUserEntityArrays = new ArrayList<UserEntity>();
+	private Handler mHandler;
 
 	// 通讯录列表
 	private ListView lvAddressGroup, lvContact, lvMyQuanQuan;
@@ -93,15 +134,19 @@ public class MainWeixin extends Activity {
 	public UrlEncodedFormEntity paramsEntity;
 	private HttpClientEntity mClient = new HttpClientEntity();
 	private DataGetTask task;
+	private DataGetTask quan_data_task, friend_data_task;
 
 	// ideas搜索界面
 	private GridView flaggrid;
 
 	// 圈圈内容
 	private GridView gridListView;
-	private ArrayList<QuanQuanEntity> mQuanQuanEntityArrays = new ArrayList<QuanQuanEntity>();
+
 	private QuanQuanAdapter gridviewadapter;
 	private List<String> lstData;
+
+	private UniteAdapter mQuanListAdapter;
+	private ContactAdapter mContactAdapter;
 
 	// private Button mRightBtn;
 	@Override
@@ -143,17 +188,32 @@ public class MainWeixin extends Activity {
 		three = one * 3;
 		four = one * 4;
 		// Log.i("info", "获取的屏幕分辨率为" + one + two + three + "X" + displayHeight);
-
 		// InitImageView();//使用动画
-
 		// 将要分页显示的View装入数组中
 		LayoutInflater mLi = LayoutInflater.from(this);
 		View view1 = mLi.inflate(R.layout.main_tab_weixin, null);
 		mDataGetHelper = new DataGetHelper();
 		mMessageEntityArrays = mDataGetHelper.initData();
 		mAdapter = new MessageAdapter(this, mMessageEntityArrays);
-		mListView = (ListView) view1.findViewById(R.id.message_listview);
-		mListView.setAdapter(mAdapter);
+		// 消息数字
+		mFriendMSGCountText = (TextView) findViewById(R.id.friends_msg_count_text);
+		mQuanMSGCountText = (TextView) findViewById(R.id.quan_msg_count_text);
+		mCollegeMSGCountText = (TextView) findViewById(R.id.college_msg_count_text);
+		mAcademyMSGCountText = (TextView) findViewById(R.id.academy_msg_count_text);
+		mClassMSGCountText = (TextView) findViewById(R.id.class_msg_count_text);
+		mSystemMSGCountText = (TextView) findViewById(R.id.system_msg_count_text);
+		// mListView = (ListView) view1.findViewById(R.id.message_listview);
+		// mListView.setAdapter(mAdapter);
+		// //主页面的消息合集列表
+		// mListView.setOnClickListener(new OnClickListener(){
+		//
+		// @Override
+		// public void onClick(View v) {
+		// // TODO Auto-generated method stub
+		//
+		// }
+		//
+		// });
 		View view2 = mLi.inflate(R.layout.main_tab_address, null);
 		// 通讯录界面控件部分
 		address_back_btn = (Button) view2.findViewById(R.id.btn_back);
@@ -175,21 +235,65 @@ public class MainWeixin extends Activity {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(MainWeixin.this,
-						MainTopRightDialog.class);
+				Intent intent = new Intent(Main.this, MainTopRightDialog.class);
 				intent.putExtra("dialog_type", "address_dialog");
 				startActivity(intent);
 			}
-
 		});
 		lvAddressGroup = (ListView) view2.findViewById(R.id.lv_addres_group);
-		lvAddressGroup.setAdapter(new AddressListAdapter(this));
+		lvAddressGroup.setAdapter(new AddressListAdapter(this,
+				Flags.FromAddress));
+		// 我的圈圈
 		lvMyQuanQuan = (ListView) view2.findViewById(R.id.lv_my_quanquan);
-		mDataGetHelper = new DataGetHelper();
-		mQuanQuanEntityArrays = mDataGetHelper.initQuanQuanData();
-		UniteAdapter adapter = new UniteAdapter(MainWeixin.this,
-				mQuanQuanEntityArrays, true);
-		lvMyQuanQuan.setAdapter(adapter);
+		lvContact = (ListView) view2.findViewById(R.id.lvContact);
+		// mDataGetHelper = new DataGetHelper();
+		// 我的圈圈列表获取
+		initMyQuanListData();
+		mHandler = new Handler() {
+			public void handleMessage(Message msg) {// 此方法在ui线程运行
+				switch (msg.what) {
+				case Flags.MSG_SUCCESS:
+					// 设置我的圈圈列表
+					mDataGetHelper = new DataGetHelper(mQuanListEntity);
+					// Log.i("查看结果",
+					// mQuanListEntity.getQuanItem(1).getQuanName());
+					mQuanQuanEntityArrays = mDataGetHelper
+							.initQuanQuanDataList();
+					mQuanListAdapter = new UniteAdapter(Main.this,
+							mQuanQuanEntityArrays, true);
+					lvMyQuanQuan.setAdapter(mQuanListAdapter);
+					break;
+				case Flags.MSG_SUCCESS_FRIEND:
+					// 设置我的好友列表
+					mDataGetHelper2 = new DataGetHelper(mFriendsListEntity);
+					// Log.i("查看结果",
+					// mFriendsListEntity.getFriendItem(1).getName());
+					mUserEntityArrays = mDataGetHelper2.initFriendsDataList();
+					mContactAdapter = new ContactAdapter(Main.this,
+							mUserEntityArrays);
+					lvContact.setAdapter(mContactAdapter);
+					break;
+				case Flags.MSG_FAILURE:
+					new AlertDialog.Builder(Main.this)
+							.setIcon(
+									getResources().getDrawable(
+											R.drawable.login_error_icon))
+							.setTitle("登录错误")
+							.setMessage("freebox帐号或密码错误，\n请重新输入！").create()
+							.show();
+					break;
+				case Flags.MSG_NEW_FRIEND_MESSAGE:
+					friendscount++;
+					mFriendMSGCountText.setText("(" + friendscount + ")");
+					break;
+				case Flags.MSG_NEW_QUAN_MESSAGE:
+					quancount++;
+					mQuanMSGCountText.setText("(" + quancount + ")");
+					break;
+				}
+			}
+		};
+
 		lvMyQuanQuan.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -200,9 +304,12 @@ public class MainWeixin extends Activity {
 				Intent intent = new Intent();
 				intent.putExtra("chat_type", "multi");
 				TextView t = (TextView) findViewById(R.id.app_title);
-				intent.putExtra("name", t.getText());
+				intent.putExtra("name", mQuanListEntity.getQuanItem(position)
+						.getQuanName());
+				intent.putExtra("quan_guid",
+						mQuanListEntity.getQuanItem(position).getQuanId());
 				intent.putExtra("dialog_type", "quanquan");
-				intent.setClass(MainWeixin.this, ChatActivity.class);
+				intent.setClass(Main.this, ChatActivity.class);
 				startActivity(intent);
 			}
 
@@ -215,6 +322,7 @@ public class MainWeixin extends Activity {
 				// TODO Auto-generated method stub
 				switch (position) {
 				case 0:
+					initMyQuanListData();
 					lvContact.setVisibility(View.VISIBLE);
 					indexBar.setVisibility(View.VISIBLE);
 					address_back_btn.setVisibility(View.VISIBLE);
@@ -222,6 +330,7 @@ public class MainWeixin extends Activity {
 					break;
 				case 1:
 					Log.i("输出信息", "我的圈圈");
+					initMyQuanListData();
 					lvMyQuanQuan.setVisibility(View.VISIBLE);
 					address_back_btn.setVisibility(View.VISIBLE);
 					lvAddressGroup.setVisibility(View.INVISIBLE);
@@ -229,34 +338,30 @@ public class MainWeixin extends Activity {
 				case 2:
 					Intent intent = new Intent();
 					intent.putExtra("quanquan_type", "校园圈圈");
-					intent.setClass(MainWeixin.this,
-							QuanQuanProfileActivity.class);
+					intent.setClass(Main.this, QuanQuanProfileActivity.class);
 					startActivity(intent);
 					break;
 				case 3:
 					Intent intent2 = new Intent();
 					intent2.putExtra("quanquan_type", "学院圈圈");
-					intent2.setClass(MainWeixin.this,
-							QuanQuanProfileActivity.class);
+					intent2.setClass(Main.this, QuanQuanProfileActivity.class);
 					startActivity(intent2);
 					break;
 				case 4:
 					Intent intent3 = new Intent();
 					intent3.putExtra("quanquan_type", "班级圈圈");
-					intent3.setClass(MainWeixin.this,
-							QuanQuanProfileActivity.class);
+					intent3.setClass(Main.this, QuanQuanProfileActivity.class);
 					startActivity(intent3);
 					break;
-
 				}
-
 			}
 
 		});
-		task = new DataGetTask();
-		task.execute(APILinkEntity.mBasicAPI);
-		lvContact = (ListView) view2.findViewById(R.id.lvContact);
-		lvContact.setAdapter(new ContactAdapter(this));
+		// task = new DataGetTask();
+		// task.execute(APILinkEntity.mBasicAPI);
+		// 好友列表获取
+		// initMyFriendListData();
+		// lvContact.setAdapter(new ContactAdapter(this));
 		lvContact.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -268,8 +373,13 @@ public class MainWeixin extends Activity {
 				String user_name_text = (String) user_name.getText();
 				Intent intent = new Intent();
 				intent.putExtra("chat_type", "two");
-				intent.putExtra("name", user_name_text);
-				intent.setClass(MainWeixin.this, ProfileActivity.class);
+				intent.putExtra("from", Flags.FromFriend);
+				intent.putExtra("user_guid",
+						mFriendsListEntity.getFriendItem(position).getUserid());
+				intent.putExtra("name",
+						mFriendsListEntity.getFriendItem(position)
+								.getUserName());
+				intent.setClass(Main.this, ProfileActivity.class);
 				startActivity(intent);
 			}
 		});
@@ -319,16 +429,15 @@ public class MainWeixin extends Activity {
 				String app_name_text = (String) text.getText();
 				Log.i("输出信息", "" + app_name_text);
 				intent.putExtra("app_name", app_name_text);
-				intent.setClass(MainWeixin.this, AppsActivity.class);
+				intent.setClass(Main.this, AppsActivity.class);
 				startActivity(intent);
-				Toast toast = Toast.makeText(MainWeixin.this, "进入"
-						+ app_name_text, Toast.LENGTH_SHORT);
+				Toast toast = Toast.makeText(Main.this, "进入" + app_name_text,
+						Toast.LENGTH_SHORT);
 				toast.show();
 			}
 
 		});
 		View view5 = mLi.inflate(R.layout.main_tab_settings, null);
-
 		// 每个页面的view数据
 		final ArrayList<View> views = new ArrayList<View>();
 		views.add(view1);
@@ -338,7 +447,6 @@ public class MainWeixin extends Activity {
 		views.add(view5);
 		// 填充ViewPager的数据适配器
 		PagerAdapter mPagerAdapter = new PagerAdapter() {
-
 			@Override
 			public boolean isViewFromObject(View arg0, Object arg1) {
 				return arg0 == arg1;
@@ -369,7 +477,19 @@ public class MainWeixin extends Activity {
 		mTabPager.setAdapter(mPagerAdapter);
 	}
 
-	//获取列表
+	private void initMyQuanListData() {
+		// TODO Auto-generated method stub
+		quan_data_task = new DataGetTask();
+		quan_data_task.execute(APILinkEntity.mBasicAPI, mTaskFlagMyQuan);
+	}
+
+	private void initMyFriendListData() {
+		// TODO Auto-generated method stub
+		friend_data_task = new DataGetTask();
+		friend_data_task.execute(APILinkEntity.mBasicAPI, mTaskFlagMyFriend);
+	}
+
+	// 获取列表
 	public class DataGetTask extends AsyncTask<String, String, String> {
 
 		@Override
@@ -377,7 +497,9 @@ public class MainWeixin extends Activity {
 			String result = null;
 			Log.i("开始后台获取", "开始task");
 			try {
+				// if (arg0[1].equals(mTaskFlagMyFriend)) {
 
+				// 获取好友列表
 				SharedPreferences sharedPreferences = getSharedPreferences(
 						"user_config", Context.MODE_PRIVATE);
 				String token = sharedPreferences
@@ -397,8 +519,28 @@ public class MainWeixin extends Activity {
 					e.printStackTrace();
 				}
 				result = mClient.PostData(arg0[0], paramsEntity);
-				Log.i("输出回执", result);
+				mFriendListJsonString = result;
+				Log.i("输出我的好友列表", mFriendListJsonString);
+				// }else if(arg0[1].equals(mTaskFlagMyQuan)){
+				Log.i("第二次token", token);
 
+				// 获取圈圈列表
+				List<NameValuePair> params2 = new ArrayList<NameValuePair>();
+				params2.add(new BasicNameValuePair("method",
+						APILinkEntity.mGetMyQuanListMethod));
+				params2.add(new BasicNameValuePair("api_key", Flags.APIKEY));
+				params2.add(new BasicNameValuePair("auth_token", token));
+				params2.add(new BasicNameValuePair("APIKey", Flags.APIKEY));
+				params2.add(new BasicNameValuePair("token", token));
+				try {
+					paramsEntity = new UrlEncodedFormEntity(params2, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				result = mClient.PostData(arg0[0], paramsEntity);
+				mQuanListJsonString = result;
+				Log.i("输出我的圈圈列表", result);
+				// }
 			} catch (ClientProtocolException e) {
 
 				e.printStackTrace();
@@ -415,10 +557,73 @@ public class MainWeixin extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			try {
-				JSONObject jsonobject =new JSONObject(result);
-				String data_list=jsonobject.getString("result");
-				JSONObject jsonobject2=new JSONObject(data_list);
-				JSONArray friend_group=jsonobject2.getJSONArray("d");
+				// 好友列表获取
+				JSONObject friendjsonobject = new JSONObject(
+						mFriendListJsonString);
+				// result对象生成
+				String friend_data_list = friendjsonobject.getString("result");
+				JSONObject jsonobject3 = new JSONObject(friend_data_list);
+				String s_flag = jsonobject3.getString("s");
+				Log.i("输出s_flag", s_flag);
+				mFriendList.clear();
+				if (s_flag.equals("1")) {
+					JSONArray friends_array = jsonobject3.getJSONArray("d");
+					for (int i = 0; i < friends_array.length(); i++) {
+						JSONObject friendjsonitem = friends_array
+								.getJSONObject(i);
+						int id = friendjsonitem.getInt("guid");
+						String name = friendjsonitem.getString("name");
+						String username = friendjsonitem.getString("username");
+						// int avatarnum=friendjsonitem.getInt("avatar");
+						int wonline = friendjsonitem.getInt("wonline");
+						int conline = friendjsonitem.getInt("conline");
+						mFriendItem = new JSONFriendListItemEntity();
+						mFriendItem.setName(name);
+						mFriendItem.setGuid(id);
+						mFriendItem.setUserName(username);
+						mFriendItem.setWonline(wonline);
+						mFriendItem.setConline(conline);
+						// mFriendItem.setAvatarNum(avatarnum);
+						mFriendList.add(mFriendItem);
+						Message message = new Message();
+						message.what = Flags.MSG_SUCCESS_FRIEND;
+						mHandler.sendMessage(message);
+						Toast.makeText(Main.this, "好友列表初始化成功",
+								Toast.LENGTH_SHORT).show();
+					}
+					mFriendsListEntity.setFriendList(mFriendList);
+				}
+				// 圈圈列表获取
+				JSONObject quanjsonobject = new JSONObject(mQuanListJsonString);
+				// result对象生成
+				String quan_data_list = quanjsonobject.getString("result");
+				JSONObject jsonobject2 = new JSONObject(quan_data_list);
+				String s_flag2 = jsonobject2.getString("s");
+				mQuanList.clear();
+				if (s_flag2.equals("1")) {
+					JSONArray quan_array = jsonobject2.getJSONArray("m");
+					for (int i = 0; i < quan_array.length(); i++) {
+						Log.i("index", "" + i);
+						JSONObject jsonitem = quan_array.getJSONObject(i);
+						int id = jsonitem.getInt("id");
+						String name = jsonitem.getString("name");
+						String tags = jsonitem.getString("tags");
+						int img = jsonitem.getInt("img");
+						mQuanItem = new JSONQuanQuanListItem();
+						mQuanItem.setQuanAvatar(img);
+						mQuanItem.setQuanName(name);
+						mQuanItem.setQuanTag(tags);
+						mQuanItem.setQuanId(id);
+						mQuanList.add(mQuanItem);
+						Log.i("圈圈item属性", id + name + tags);
+						Message message = new Message();
+						message.what = Flags.MSG_SUCCESS;
+						mHandler.sendMessage(message);
+						Toast.makeText(Main.this, "获取列表成功", Toast.LENGTH_SHORT)
+								.show();
+					}
+					mQuanListEntity.setQuanList(mQuanList);
+				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -631,11 +836,11 @@ public class MainWeixin extends Activity {
 				mCloseBtn.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View arg0) {
-						Toast.makeText(MainWeixin.this, "退出", Toast.LENGTH_LONG)
+						Toast.makeText(Main.this, "退出", Toast.LENGTH_LONG)
 								.show();
 						ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 						manager.restartPackage(getPackageName());
-						MainWeixin.this.finish();
+						Main.this.finish();
 						// menuWindow.dismiss(); // 响应点击事件之后关闭Menu
 
 					}
@@ -679,10 +884,38 @@ public class MainWeixin extends Activity {
 		intent.putExtra("name", user_name);
 		intent.putExtra("chat_type", "two");
 		intent.putExtra("dialog_type", "friend");
-		intent.setClass(MainWeixin.this, ChatActivity.class);
+		intent.setClass(Main.this, ChatActivity.class);
 		startActivity(intent);
 		Toast.makeText(getApplicationContext(), "来自" + user_name + "的消息",
 				Toast.LENGTH_LONG).show();
+	}
+
+	public void MyProfileEdit(View v) {
+		Intent intent = new Intent();
+		intent.setClass(Main.this, MyProfileEditActivity.class);
+		startActivity(intent);
+	}
+
+	public void setPushMessage(JSONMessageEntity messageentity) {
+		int code = messageentity.getCode();
+		switch (code) {
+		case Flags.MSG_P2P:
+			Message message = new Message();
+			message.what = Flags.MSG_NEW_FRIEND_MESSAGE;
+			mHandler.sendMessage(message);
+			break;
+		case Flags.MSG_Group:
+			Message message2 = new Message();
+			message2.what = Flags.MSG_NEW_QUAN_MESSAGE;
+			mHandler.sendMessage(message2);
+			break;
+		case Flags.MSG_SYSTEM:
+			Message message3 = new Message();
+			message3.what = Flags.MSG_NEW_SYSTEM_MESSAGE;
+			mHandler.sendMessage(message3);
+			break;
+		}
+
 	}
 	// public void exit_settings(View v) { //退出 伪“对话框”，其实是一个activity
 	// Intent intent = new Intent (MainWeixin.this,ExitFromSettings.class);

@@ -1,7 +1,10 @@
 package com.example.freebox.adapter;
 
+import java.util.ArrayList;
+
 import com.example.freebox.R;
 import com.example.freebox.adapter.ContactAdapter.ViewHolder;
+import com.example.freebox.config.Flags;
 
 import android.content.Context;
 import android.util.Log;
@@ -14,24 +17,43 @@ import android.widget.TextView;
 
 public class AddressListAdapter extends BaseAdapter {
 	private Context mContext;
-	private String[] address_group = { "我的好友", "我的圈圈", "校园圈圈", "学院圈圈",
-			"班级圈圈" };
+	private String flag;
+	private String[] address_group = { "我的好友", "我的圈圈", "校园圈圈", "学院圈圈", "班级圈圈" };
+	public static String[] quan_profile_group = { "圈圈状态", "圈圈活动", "圈圈号码", "圈圈大佬",
+			"圈圈公告", "圈圈成员" };
 
-	public AddressListAdapter(Context context) {
+	private ArrayList<String> profile=new ArrayList<String>();
+	public AddressListAdapter(Context context, String flag) {
 		// TODO Auto-generated constructor stub
 		this.mContext = context;
+		this.flag = flag;
+	}
+
+	public AddressListAdapter(Context context, String flag,ArrayList<String> profile) {
+		// TODO Auto-generated constructor stub
+		this.mContext = context;
+		this.flag = flag;
+		this.profile=profile;
 	}
 
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		return address_group.length;
+		if (flag.equals(Flags.FromAddress)) {
+			return address_group.length;
+		} else {
+			return quan_profile_group.length;
+		}
 	}
 
 	@Override
 	public Object getItem(int position) {
 		// TODO Auto-generated method stub
-		return address_group.length;
+		if (flag.equals(Flags.FromAddress)) {
+			return address_group.length;
+		} else {
+			return quan_profile_group.length;
+		}
 	}
 
 	@Override
@@ -54,8 +76,13 @@ public class AddressListAdapter extends BaseAdapter {
 		} else {
 			viewHolder = (ViewHolder) convertView.getTag();
 		}
-		Log.i("输出位置数据", address_group[position]);
-		viewHolder.address_group_item_text.setText(address_group[position]);
+		// Log.i("输出位置数据", address_group[position]);
+		if (flag.equals(Flags.FromAddress)) {
+			viewHolder.address_group_item_text.setText(address_group[position]);
+		} else {
+			viewHolder.address_group_item_text
+					.setText(profile.get(position));
+		}
 		return convertView;
 	}
 

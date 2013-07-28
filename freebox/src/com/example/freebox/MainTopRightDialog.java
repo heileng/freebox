@@ -89,7 +89,7 @@ public class MainTopRightDialog extends Activity {
 
 		if (type.equals("quanquan_dialog")) {
 			type_flag = QUAND;
-			item1.setText("»¶»¶◊¥Ã¨");
+			item1.setText("»¶»¶–≈œ¢");
 			item2.setText("»¶»¶ªÓ∂Ø");
 			item3.setText("»¶»¶∫≈¬Î");
 			item4.setText("»¶»¶¥Û¿–");
@@ -157,6 +157,9 @@ public class MainTopRightDialog extends Activity {
 		case 1:
 			break;
 		case 2:
+			Intent intent=new Intent();
+			intent.setClass(MainTopRightDialog.this, NewQuanActivity.class);
+			startActivity(intent);
 			Toast.makeText(this, "–¬Ω®»¶»¶", Toast.LENGTH_LONG).show();
 			break;
 		}
@@ -174,6 +177,9 @@ public class MainTopRightDialog extends Activity {
 			;
 			break;
 		case 2:
+			Intent intent=new Intent();
+			intent.setClass(MainTopRightDialog.this, SearchQuanActivity.class);
+			startActivity(intent);
 			Toast.makeText(this, "≤È’“»¶»¶", Toast.LENGTH_LONG).show();
 			break;
 		}

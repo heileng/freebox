@@ -289,6 +289,7 @@
                 <Button
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:onClick="sendMessage"
                     android:layout_weight="1"
                     android:background="@drawable/btn_style_green"
                     android:text="发消息"
@@ -300,7 +301,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@drawable/btn_style_green"
-                    android:onClick="btn_back_send"
+                    android:onClick="sendVideo"
                     android:text="视频"
                     android:textColor="#fff"
                     android:textSize="18sp" />

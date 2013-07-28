@@ -1,6 +1,8 @@
 package com.example.freebox;
 
 
+import com.example.freebox.push.MyPushManager;
+
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
@@ -15,12 +17,14 @@ public class Welcome extends Activity {
         setContentView(R.layout.welcome);
     }
     public void welcome_login(View v) {  
+    	MyPushManager.startWork(this);
       	Intent intent = new Intent();
 		intent.setClass(Welcome.this,Login.class);
 		startActivity(intent);
 		//this.finish();
       }  
-    public void welcome_register(View v) {  
+    public void welcome_register(View v) { 
+    	MyPushManager.startWork(this);
       	Intent intent = new Intent();
 		intent.setClass(Welcome.this,Register.class);
 		startActivity(intent);

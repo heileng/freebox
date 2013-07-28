@@ -22,6 +22,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -48,7 +49,7 @@ public class Login extends Activity {
 			switch (msg.what) {
 			case MSG_SUCCESS:
 				Intent intent = new Intent();
-				intent.setClass(Login.this, MainWeixin.class);
+				intent.setClass(Login.this, Main.class);
 				startActivity(intent);
 				Toast.makeText(getApplicationContext(), "登录成功",
 						Toast.LENGTH_SHORT).show();
@@ -108,6 +109,15 @@ public class Login extends Activity {
 						.toString()));
 				params1.add(new BasicNameValuePair("p", mPassword.getText()
 						.toString()));
+				SharedPreferences sp = PreferenceManager
+						.getDefaultSharedPreferences(Login.this);
+				String channelid = sp.getString("channelid", "none");
+				String userid = sp.getString("userid", "none");
+				String appid = sp.getString("appid", "none");
+				Log.i("百度用户id", userid);
+				Log.i("百度channelid", channelid);
+				params1.add(new BasicNameValuePair("buid", userid));
+				params1.add(new BasicNameValuePair("bcid", channelid));
 				try {
 					paramsEntity = new UrlEncodedFormEntity(params1, "UTF-8");
 				} catch (UnsupportedEncodingException e) {
@@ -131,6 +141,7 @@ public class Login extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			// TODO Auto-generated method stub
+			Toast.makeText(Login.this, result, Toast.LENGTH_LONG).show();
 			try {
 				JSONObject mJSONObject = new JSONObject(result);
 				String r = mJSONObject.getString("result");
@@ -140,13 +151,15 @@ public class Login extends Activity {
 				if (flag == 1) {
 					String username = mUser.getText().toString();
 					String token = mJSONState.getString("t");
-					Log.i("JSON", token);
+					int userid = mJSONState.getInt("guid");
+					// Log.i("JSON", token);
 					SharedPreferences sharedPreferences = getSharedPreferences(
 							"user_config", Context.MODE_PRIVATE);
 					Editor editor = sharedPreferences.edit();// 获取编辑器
 					editor.putString("auth_token", token);
 					editor.putString("user_name", username);
-					Log.i("用户名",username);
+					editor.putInt("user_guid", userid);
+					Log.i("用户名", username);
 					editor.commit();// 提交修改
 					Toast.makeText(Login.this, token, Toast.LENGTH_LONG).show();
 					// 测试是否已经存入sharepreference

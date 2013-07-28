@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,7 +37,7 @@ import android.widget.Toast;
 
 public class ProfileActivity extends BaseActivity {
 	private TextView user_name, user_gender, user_constellation, user_phone,
-			user_personalized_signature, user_location;
+			user_personalized_signature, user_location, user_intersts;
 	private ImageView user_avatar;
 	private UserEntity myEntity;
 	public UrlEncodedFormEntity paramsEntity;
@@ -44,12 +45,17 @@ public class ProfileActivity extends BaseActivity {
 	private DataGetTask task;
 	private String fromflag;
 	private String user_name_text;
-
+	private String chat_type;
+	private int user_guid;
+	private Button send_msg_btn;
+	private Button send_vid_btn;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		// setContentView(R.layout.profile_layout);
 		setContentLayout(R.layout.profile_layout);
+		// 初始化控件
 		myEntity = new UserEntity();
 		mClient = new HttpClientEntity();
 		user_name = (TextView) findViewById(R.id.user_name_user_id);
@@ -58,16 +64,22 @@ public class ProfileActivity extends BaseActivity {
 		user_personalized_signature = (TextView) findViewById(R.id.personalized_signature);
 		user_location = (TextView) findViewById(R.id.location);
 		user_avatar = (ImageView) findViewById(R.id.user_avatar);
+		user_intersts = (TextView) findViewById(R.id.intersts);
+		
+
+		// 提取intent信息
 		Intent intent = getIntent();
 		user_name_text = intent.getStringExtra("name");
 		fromflag = intent.getStringExtra("from");
+		user_guid = intent.getIntExtra("user_guid", 0);
+		chat_type = intent.getStringExtra("chat_type");
+
 		setTitle("详细信息");
 		task = new DataGetTask();
 		task.execute(APILinkEntity.mBasicAPI, fromflag, user_name_text);
 		SharedPreferences sharedPreferences = getSharedPreferences(
 				"user_config", Context.MODE_PRIVATE);
-		String user_name = sharedPreferences.getString("user_name",
-				"none");
+		String user_name = sharedPreferences.getString("user_name", "none");
 		if (user_name_text.equals(user_name)) {
 			setbtn_rightRes(R.drawable.mm_title_btn_edit);
 		}
@@ -81,8 +93,9 @@ public class ProfileActivity extends BaseActivity {
 				String user_name = sharedPreferences.getString("user_name",
 						"none");
 				if (user_name_text.equals(user_name)) {
-					Intent intent=new Intent();
-					intent.setClass(ProfileActivity.this, MyProfileEditActivity.class);
+					Intent intent = new Intent();
+					intent.setClass(ProfileActivity.this,
+							MyProfileEditActivity.class);
 					startActivity(intent);
 				} else {
 					Intent intent = new Intent(ProfileActivity.this,
@@ -98,6 +111,14 @@ public class ProfileActivity extends BaseActivity {
 	public void head_xiaohei(View v) { // 头像按钮
 		Intent intent = new Intent();
 		intent.setClass(ProfileActivity.this, AvatarActivity.class);
+		startActivity(intent);
+	}
+	public void sendMessage(View v){
+		Intent intent=new Intent();
+		intent.setClass(ProfileActivity.this, ChatActivity.class);
+		intent.putExtra("user_guid", user_guid);
+		intent.putExtra("chat_type", chat_type);
+		intent.putExtra("name", user_name_text);
 		startActivity(intent);
 	}
 
@@ -141,7 +162,7 @@ public class ProfileActivity extends BaseActivity {
 					params1.add(new BasicNameValuePair("api_key", Flags.APIKEY));
 					params1.add(new BasicNameValuePair("auth_token", token));
 					params1.add(new BasicNameValuePair("t", token));
-					params1.add(new BasicNameValuePair("fguid", "17777777777"));
+					params1.add(new BasicNameValuePair("fguid", user_name_text));
 					try {
 						paramsEntity = new UrlEncodedFormEntity(params1,
 								"UTF-8");
@@ -187,16 +208,22 @@ public class ProfileActivity extends BaseActivity {
 					String sex = mJSONProfile.getString("sex");
 					String constellation = mJSONProfile
 							.getString("constellation");
+					String intersts = mJSONProfile.getString("interests");
 
 					SharedPreferences sharedPreferences = getSharedPreferences(
 							"user_config", Context.MODE_PRIVATE);
 					String username = sharedPreferences.getString("user_name",
 							"none");
 					Log.i("取出用户名", username);
-					user_name.setText(username);
+					if (username.equals(user_name_text)) {
+						user_name.setText(username);
+					}else{
+						user_name.setText(user_name_text);
+					}
 					user_personalized_signature.setText(briefdescription);
 					user_constellation.setText(constellation);
 					user_gender.setText(sex);
+					user_intersts.setText(intersts);
 					user_location.setText(location);
 					Log.i("个人资料", constellation + briefdescription
 							+ contactemail + phone + location + sex

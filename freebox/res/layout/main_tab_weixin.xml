@@ -21,6 +21,155 @@
             android:textSize="20sp" />
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/my_friends_message_count"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/mm_listitem"
+        android:clickable="true"
+        android:gravity="center_vertical" >
+
+        <TextView
+            android:id="@+id/my_friends_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="好友消息"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/friends_msg_count_text"
+            android:layout_toRightOf="@+id/my_friends_message"
+            android:text="(4)"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/my_quan_message_count"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/mm_listitem"
+        android:clickable="true"
+        android:gravity="center_vertical" >
+
+        <TextView
+            android:id="@+id/quan_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="圈圈消息"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/quan_msg_count_text"
+            android:layout_toRightOf="@+id/quan_message"
+            android:text="(7)"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/my_college_message_count"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/mm_listitem"
+        android:clickable="true"
+        android:gravity="center_vertical" >
+
+        <TextView
+            android:id="@+id/college_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="校园消息"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/college_msg_count_text"
+            android:layout_toRightOf="@+id/college_message"
+            android:text="(7)"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/my_academy_message_count"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/mm_listitem"
+        android:clickable="true" >
+
+        <TextView
+            android:id="@+id/academy_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="学院消息"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/academy_msg_count_text"
+            android:layout_toRightOf="@+id/academy_message"
+            android:text="(7)"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/my_class_message_count"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/mm_listitem"
+        android:clickable="true"
+        android:gravity="center_vertical" >
+
+        <TextView
+            android:id="@+id/class_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="班级消息"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/class_msg_count_text"
+            android:layout_toRightOf="@+id/class_message"
+            android:text="(7)"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/system_message_count"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/mm_listitem"
+        android:clickable="true"
+        android:gravity="center_vertical" >
+
+        <TextView
+            android:id="@+id/system_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="系统消息"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/system_msg_count_text"
+            android:layout_toRightOf="@+id/system_message"
+            android:text="(8)"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
     <ListView
         android:id="@+id/message_listview"
         android:layout_width="fill_parent"
@@ -29,5 +178,6 @@
         android:divider="@null"
         android:dividerHeight="5dp"
         android:scrollbarStyle="outsideOverlay" />
+
 
 </LinearLayout>
