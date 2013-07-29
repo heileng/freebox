@@ -7,6 +7,12 @@ public class MessageEntity {
 	private String content;
 	private String time;
 	private Bitmap avatar;
+	private int code;
+	private String type;
+	private String source;
+	private String dest;
+	
+	private int messagecount;
 
 	public MessageEntity() {
 		// TODO Auto-generated constructor stub
@@ -22,6 +28,12 @@ public class MessageEntity {
 
 	public String getName() {
 		return name;
+	}
+	public int getMessageCount(){
+		return messagecount;
+	}
+	public void setMessageCount(int count){
+		this.messagecount=count;
 	}
 
 	public String getTime() {

@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class QuanQuanAdapter extends BaseAdapter {
@@ -43,14 +44,16 @@ public class QuanQuanAdapter extends BaseAdapter {
 	public View getView(int position, View convertView, ViewGroup parent) {
 		ViewHolder viewHolder = null;
 		if (convertView == null) {
+			viewHolder = new ViewHolder();
 			if (flag == false) {
 				convertView = LayoutInflater.from(context).inflate(
 						R.layout.quanquan_item, null);
+				viewHolder.imageview = (ImageView) convertView
+						.findViewById(R.id.img_userAge);
 			} else if (flag == true) {
 				convertView = LayoutInflater.from(context).inflate(
 						R.layout.search_flags_item, null);
 			}
-			viewHolder = new ViewHolder();
 			viewHolder.content = (TextView) convertView
 					.findViewById(R.id.txt_userAge);
 			convertView.setTag(viewHolder);
@@ -60,16 +63,16 @@ public class QuanQuanAdapter extends BaseAdapter {
 		if (flag == false) {
 			switch (position) {
 			case 0:
-				convertView.setBackgroundColor(Color.CYAN);
+				viewHolder.imageview.setImageResource(R.drawable.game);
 				break;
 			case 1:
-				convertView.setBackgroundColor(Color.YELLOW);
+				viewHolder.imageview.setImageResource(R.drawable.music);
 				break;
 			case 2:
-				convertView.setBackgroundColor(Color.RED);
+				viewHolder.imageview.setImageResource(R.drawable.soft);
 				break;
 			case 3:
-				convertView.setBackgroundColor(Color.GREEN);
+				viewHolder.imageview.setImageResource(R.drawable.business);
 				break;
 			}
 		}
@@ -81,6 +84,7 @@ public class QuanQuanAdapter extends BaseAdapter {
 	static class ViewHolder {
 		public TextView name;
 		public TextView content;
+		public ImageView imageview;
 	}
 
 }

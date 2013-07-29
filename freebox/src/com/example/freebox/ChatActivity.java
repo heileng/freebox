@@ -32,6 +32,7 @@ import com.example.freebox.ui.Expressions;
 import com.example.freebox.utils.DataBaseHandler;
 import com.example.freebox.utils.DataGetHelper;
 import com.example.freebox.utils.DatabaseHelper;
+import com.example.freebox.utils.Utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -119,6 +120,23 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 	private DataGetTask task;
 	private DataBaseHandler mDataBaseHandler;
 
+	
+	public ChatActivity() {
+		super();
+		DataHandler.ChatActivity=this;
+	}
+	public int getmQuanId() {
+		return mQuanId;
+	}
+	public void setmQuanId(int mQuanId) {
+		this.mQuanId = mQuanId;
+	}
+	public int getMguid() {
+		return mguid;
+	}
+	public void setMguid(int mguid) {
+		this.mguid = mguid;
+	}
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -137,6 +155,8 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 				"user_config", Context.MODE_PRIVATE);
 		userid = sharedPreferences.getInt("user_guid", 0);
 		username = sharedPreferences.getString("user_name", "none");
+	
+		Log.i("当前聊天界面", "朋友id："+mguid+"朋友名字："+title_name);
 		Log.i("圈圈ID", "点击了圈圈id" + mQuanId);
 		// mTitleText=(TextView)findViewById(R.id.chat_title_name);
 		ll_fasong = (LinearLayout) findViewById(R.id.ll_fasong);
@@ -166,6 +186,7 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 					break;
 				case Flags.MSG_NEW_QUAN_MESSAGE:
 					if (chat_type.equals("multi")) {
+						updateNewMessageData();
 						Toast.makeText(ChatActivity.this, "收到一条新的圈圈消息",
 								Toast.LENGTH_SHORT).show();
 					}
@@ -309,12 +330,17 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		ArrayList<JSONMessageEntity> chatListEntity = new ArrayList<JSONMessageEntity>();
 		DataBaseHandler databasehandler=new DataBaseHandler(ChatActivity.this);
 		String friend_guid=""+mguid;
+		Log.i("朋友guid", mguid+"");
 		chatListEntity=databasehandler.getCurrentUserMessageList(friend_guid);
 		for (int i = 0; i < chatListEntity.size(); i++) {
 			ChatMsgEntity entity = new ChatMsgEntity();
 			entity.setDate(chatListEntity.get(i).getStringTime());
-			entity.setName(username);
-			entity.setMsgType(false);
+			entity.setName(chatListEntity.get(i).getSources());
+			if(chatListEntity.get(i).getSources().equals(friend_guid)){
+				entity.setMsgType(true);
+			}else{
+				entity.setMsgType(false);
+			}			
 			entity.setText(chatListEntity.get(i).getContent());
 			mDataArrays.add(entity);
 		}
@@ -325,21 +351,21 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		mListView.setSelection(mListView.getCount() - 1);
 	}
 	private void updateNewMessageData() {
-		mDataBaseHandler = new DataBaseHandler(ChatActivity.this);
-		ArrayList<JSONMessageEntity> chatListEntity = new ArrayList<JSONMessageEntity>();
-		chatListEntity = mDataBaseHandler.getCurrentUserMessageList(username);
-		for (int i = 0; i < chatListEntity.size(); i++) {
-			ChatMsgEntity entity = new ChatMsgEntity();
-			entity.setDate(chatListEntity.get(i).getStringTime());
-			entity.setName(username);
-			entity.setMsgType(false);
-			entity.setText(chatListEntity.get(i).getContent());
-			mDataArrays.add(entity);
-		}
-		viewPager.setVisibility(ViewPager.GONE);
-		page_select.setVisibility(page_select.GONE);
-		mAdapter.notifyDataSetChanged();
-		mListView.setSelection(mListView.getCount() - 1);
+//		mDataBaseHandler = new DataBaseHandler(ChatActivity.this);
+//		ArrayList<JSONMessageEntity> chatListEntity = new ArrayList<JSONMessageEntity>();
+//		chatListEntity = mDataBaseHandler.getCurrentUserMessageList(String.valueOf(mguid));
+//		for (int i = 0; i < chatListEntity.size(); i++) {
+//			ChatMsgEntity entity = new ChatMsgEntity();
+//			entity.setDate(chatListEntity.get(i).getStringTime());
+//			entity.setName(username);
+//			entity.setMsgType(false);
+//			entity.setText(chatListEntity.get(i).getContent());
+//			mDataArrays.add(entity);
+//		}
+//		viewPager.setVisibility(ViewPager.GONE);
+//		page_select.setVisibility(page_select.GONE);
+//		mAdapter.notifyDataSetChanged();
+//		mListView.setSelection(mListView.getCount() - 1);
 	}
 
 	private String getDate() {
@@ -476,33 +502,51 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 		protected String doInBackground(String... arg0) {
 			// TODO Auto-generated method stub
 			String result = null;
-			Log.i("开始后台获取", "开始task");
+			Log.i(Utils.TAG, "开始task");
 			try {
 				SharedPreferences sharedPreferences = getSharedPreferences(
 						"user_config", Context.MODE_PRIVATE);
 				String token = sharedPreferences
 						.getString("auth_token", "none");
 				int userid = sharedPreferences.getInt("user_guid", 0);
-				Log.i("我的id", "" + userid);
 				List<NameValuePair> params1 = new ArrayList<NameValuePair>();
-				params1.add(new BasicNameValuePair("method",
-						APILinkEntity.mSendP2PMessageMethod));
+				
 				params1.add(new BasicNameValuePair("api_key", Flags.APIKEY));
 				params1.add(new BasicNameValuePair("auth_token", token));
-				params1.add(new BasicNameValuePair("fguid", "" + userid));
-				params1.add(new BasicNameValuePair("tguid", "" + mguid));
-				Log.i("发送方id", "" + mguid);
-				Log.i("发送的信息", arg0[1]);
+				
+				if(mguid>0){
+					params1.add(new BasicNameValuePair("fguid", "" + userid));
+					params1.add(new BasicNameValuePair("tguid", "" + mguid));
+					params1.add(new BasicNameValuePair("method",
+							APILinkEntity.mSendP2PMessageMethod));
+				}
+				else if(mQuanId>0){
+						params1.add(new BasicNameValuePair("user_guid", "" + userid));
+						params1.add(new BasicNameValuePair("group_guid", "" + mQuanId));
+						params1.add(new BasicNameValuePair("method",
+								APILinkEntity.mSendQuanMessageMethod));
+				}
+				else{
+					Toast.makeText(ChatActivity.this, "发送目的地信息错误！", Toast.LENGTH_LONG).show();
+					return null;					
+				}
+				Log.i(Utils.TAG, "我的id：" + userid);
+				Log.i(Utils.TAG, "目的ID：" + ((mguid==0)?mQuanId:mguid));
+				Log.i(Utils.TAG, "发送的信息"+arg0[1]);
+				
+				
+//					byte[] tempstr=arg0[1].getBytes();
+//					String temps=new String(tempstr,"UTF-8");
 				params1.add(new BasicNameValuePair("message", arg0[1]));
 				try {
 					StringEntity se = new StringEntity("", "UTF-8");
 					// HttpEntity httpentity=new StringEntity(params1, "UTF-8");
-					paramsEntity = new UrlEncodedFormEntity(params1);
+					paramsEntity = new UrlEncodedFormEntity(params1,"UTF-8");
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
 				result = mClient.PostData(arg0[0], paramsEntity);
-				Log.i("输出回执", result);
+				Log.i(Utils.TAG, "输出回执："+result);
 			} catch (ClientProtocolException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -651,18 +695,37 @@ public class ChatActivity extends BaseActivity implements OnClickListener {
 
 	public void setPushMessage(JSONMessageEntity messageentity) {
 		int code = messageentity.getCode();
+		ChatMsgEntity entity = new ChatMsgEntity();
+		entity.setDate(messageentity.getTimes());		
+		entity.setText(messageentity.getContent());
 		switch (code) {
 		case Flags.MSG_P2P:
-			Message message = new Message();
-			message.what = Flags.MSG_NEW_FRIEND_MESSAGE;
-			mHandler.sendMessage(message);
+			entity.setName(messageentity.getSources());
+			if(messageentity.getSources().equals(mguid)){
+				entity.setMsgType(true);
+			}else{
+				entity.setMsgType(false);
+			}	
+//			Message message = new Message();
+//			message.what = Flags.MSG_NEW_FRIEND_MESSAGE;
+//			mHandler.sendMessage(message);
 			break;
 		case Flags.MSG_Group:
-			Message message2 = new Message();
-			message2.what = Flags.MSG_NEW_QUAN_MESSAGE;
-			mHandler.sendMessage(message2);
+			entity.setName(messageentity.getDest());
+			if(messageentity.getDest().equals(mQuanId)){
+				entity.setMsgType(true);
+			}else{
+				entity.setMsgType(false);
+			}	
+//			Message message2 = new Message();
+//			message2.what = Flags.MSG_NEW_QUAN_MESSAGE;
+//			mHandler.sendMessage(message2);
 			break;
 		}
+		
+		mAdapter.addItem(entity);
+		mAdapter.notifyDataSetChanged();
+		mListView.setSelection(mListView.getCount() - 1);
 	}
 
 }

@@ -8,6 +8,7 @@ import com.example.freebox.adapter.UniteAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -54,6 +55,10 @@ public class AppsActivity extends BaseActivity {
 			break;
 		case 2:
 			setContentLayout(R.layout.apps_layout);
+			
+			LinearLayout layout=(LinearLayout)findViewById(R.id.ly_content);
+			layout.setBackgroundResource(R.drawable.background);
+
 			apps_listview = (ListView) findViewById(R.id.apps_listview);
 			apps_list = new ArrayList<String>();
 			apps_list.add("跳蚤市场（旧货交易）");

@@ -51,7 +51,9 @@ public class ChatMsgViewAdapter extends BaseAdapter {
         return position;
     }
     
-
+    public void addItem(ChatMsgEntity chatmsg){
+    	coll.add(chatmsg);
+    }
 
 	public int getItemViewType(int position) {
 		// TODO Auto-generated method stub

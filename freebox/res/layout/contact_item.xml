@@ -14,7 +14,7 @@
         android:id="@+id/contactitem_layout"
         style="@style/MMListItem"
         android:layout_height="56.0dip"
-        android:background="@drawable/mm_listitem"
+        android:background="@drawable/bg_contact_item"
         android:paddingLeft="8.0dip" >
 
         <ImageView
@@ -39,10 +39,10 @@
 
         <TextView
             android:id="@+id/personalize_sig"
-            android:text="个性签名"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="21.0dip"
+            android:text="个性签名"
             android:visibility="visible" />
     </LinearLayout>
 

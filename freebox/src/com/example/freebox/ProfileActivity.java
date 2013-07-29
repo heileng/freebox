@@ -12,6 +12,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.bairuitech.demo.RoomActivity;
 import com.example.freebox.Login.DataGetTask;
 import com.example.freebox.config.Flags;
 import com.example.freebox.connection.APILinkEntity;
@@ -122,6 +123,11 @@ public class ProfileActivity extends BaseActivity {
 		startActivity(intent);
 	}
 
+	public void sendVideo(View v){
+		Intent intent1=new Intent();
+		intent1.setClass(ProfileActivity.this, RoomActivity.class);
+		startActivity(intent1);
+	}
 	public class DataGetTask extends AsyncTask<String, String, String> {
 
 		@Override

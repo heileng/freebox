@@ -124,7 +124,6 @@ public class Login extends Activity {
 					e.printStackTrace();
 				}
 				result = mClient.PostData(arg0[0], paramsEntity);
-				Log.i("输出回执", result);
 			} catch (ClientProtocolException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -141,7 +140,7 @@ public class Login extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			// TODO Auto-generated method stub
-			Toast.makeText(Login.this, result, Toast.LENGTH_LONG).show();
+//			Toast.makeText(Login.this, result, Toast.LENGTH_LONG).show();
 			try {
 				JSONObject mJSONObject = new JSONObject(result);
 				String r = mJSONObject.getString("result");
@@ -161,7 +160,6 @@ public class Login extends Activity {
 					editor.putInt("user_guid", userid);
 					Log.i("用户名", username);
 					editor.commit();// 提交修改
-					Toast.makeText(Login.this, token, Toast.LENGTH_LONG).show();
 					// 测试是否已经存入sharepreference
 					SharedPreferences sharedPreferences2 = getSharedPreferences(
 							"user_config", Context.MODE_PRIVATE);

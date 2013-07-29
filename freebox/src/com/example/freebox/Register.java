@@ -10,6 +10,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.example.freebox.config.Flags;
 import com.example.freebox.connection.APILinkEntity;
@@ -37,7 +38,7 @@ public class Register extends Activity {
 	private HttpClientEntity mClient;
 	private DataGetTask task;
 	private UrlEncodedFormEntity paramsEntity = null;
-	private String URL = "http://10.11.246.167/freebox/services/api/rest/json/";
+//	private String URL = "http://10.11.246.167/freebox/services/api/rest/json/";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -70,7 +71,7 @@ public class Register extends Activity {
 			// + mPassword.getText().toString()+and+"api_key="+Flags.APIKEY;
 			// Log.i("打印地址", url);
 			task = new DataGetTask();
-			task.execute(URL);
+			task.execute(APILinkEntity.mBasicAPI);
 		} else {
 			mAlertText.setText("两次输入的密码不一致，请重新输入");
 			mPassword.setText(null);
@@ -87,15 +88,14 @@ public class Register extends Activity {
 			String result = null;
 			Log.i("开始后台获取", "开始task");
 			try {
-				// HttpClientEntity cliententity = new HttpClientEntity();
 				List<NameValuePair> params1 = new ArrayList<NameValuePair>();
 				params1.add(new BasicNameValuePair("method",
 						APILinkEntity.mRegisterMethod));
 				params1.add(new BasicNameValuePair("api_key", Flags.APIKEY));
 				params1.add(new BasicNameValuePair("n", mUserName.getText()
 						.toString()));
-				params1.add(new BasicNameValuePair("e", mEmail.getText()
-						.toString()));
+//				params1.add(new BasicNameValuePair("e", mEmail.getText()
+//						.toString()));
 				params1.add(new BasicNameValuePair("u", mPhoneNum.getText()
 						.toString()));
 				params1.add(new BasicNameValuePair("p", mPassword.getText()
@@ -107,7 +107,6 @@ public class Register extends Activity {
 				String appid = sp.getString("appid", "none");
 				Log.i("百度用户id", userid);
 				Log.i("百度channelid", channelid);
-
 				params1.add(new BasicNameValuePair("buid", userid));
 				params1.add(new BasicNameValuePair("bcid", channelid));
 				try {
@@ -133,7 +132,22 @@ public class Register extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			// TODO Auto-generated method stub
-			Toast.makeText(Register.this, result, Toast.LENGTH_SHORT).show();
+			JSONObject mJSONObject;
+			try {
+				mJSONObject = new JSONObject(result);
+				String r = mJSONObject.getString("result");
+				Log.i("JSON", r);
+				JSONObject mJSONState = new JSONObject(r);
+				int flag = mJSONState.getInt("s");
+				if(flag==1){
+					Toast.makeText(Register.this, "注册成功", Toast.LENGTH_SHORT).show();
+					Register.this.finish();
+				}else if(flag==-1){
+					Toast.makeText(Register.this, "注册失败", Toast.LENGTH_SHORT).show();
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

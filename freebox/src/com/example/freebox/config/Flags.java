@@ -15,6 +15,7 @@ public class Flags {
 	public static final int MSG_NEW_USER_SYSTEM_MESSAGE=29;
 	public static final int MSG_NEW_FRIEND_MESSAGE = 30;
 	public static final int MSG_NEW_QUAN_MESSAGE = 31;
+	public static final int MSG_UPDATE_IDEAS=100;
 	
 	//ÏûÏ¢±àÂë
 	public static final int MSG_SYSTEM=1;

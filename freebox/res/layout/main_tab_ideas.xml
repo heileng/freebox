@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/background"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/title"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:background="@drawable/title_bar" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="9dp"
+            android:text="Idea搜索"
+            android:textColor="#ffffff"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
+        <GridView
+            android:id="@+id/flags_grid"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_2"
+            android:fastScrollEnabled="false"
+            android:gravity="center"
+            android:numColumns="3"
+            android:paddingBottom="7dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="7dp"
+            android:scrollbars="none" >
+        </GridView>
+
+        <ListView
+            android:id="@+id/lv_ideas_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/flags_grid"
+            android:layout_marginLeft="10.0dp"
+            android:layout_marginRight="10.0dp"
+            android:layout_marginBottom="45dip"
+            android:cacheColorHint="#0000"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="5dp"
+            android:scrollbarStyle="outsideOverlay"
+            android:scrollbars="none" />
+
+        <LinearLayout
+            android:id="@+id/ll_fasong"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/chat_footer_bg"
+            android:orientation="horizontal"
+            android:paddingTop="6.0dip"
+            android:visibility="visible" >
+
+            <EditText
+                android:id="@+id/et_sendideas"
+                android:layout_width="wrap_content"
+                android:layout_height="38dip"
+                android:layout_marginBottom="3dip"
+                android:layout_marginLeft="3dip"
+                android:layout_marginRight="3dip"
+                android:layout_weight="4"
+                android:background="@drawable/login_edit_normal"
+                android:padding="5dip"
+                android:singleLine="true"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/send_ideas_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginBottom="3dip"
+                android:layout_marginLeft="3dip"
+                android:layout_marginRight="3dip"
+                android:layout_weight="1"
+                android:background="@drawable/btn_style_green"
+                android:padding="5dip"
+                android:text="发送" />
+        </LinearLayout>
+    </RelativeLayout>
+
+</LinearLayout>

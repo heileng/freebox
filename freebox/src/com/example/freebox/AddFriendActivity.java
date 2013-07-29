@@ -108,7 +108,10 @@ public class AddFriendActivity extends BaseActivity {
 				JSONObject mResultobject=new JSONObject(resultdata);
 				String data = mResultobject.getString("s");
 				if(data.equals("1")){
-					Toast.makeText(AddFriendActivity.this, mResultobject.getString("m"), Toast.LENGTH_LONG).show();
+					AddFriendActivity.this.finish();
+					Toast.makeText(AddFriendActivity.this, "好友添加成功！", Toast.LENGTH_LONG).show();
+				}else{
+					Toast.makeText(AddFriendActivity.this, "您已经添加过该用户！", Toast.LENGTH_LONG).show();
 				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block

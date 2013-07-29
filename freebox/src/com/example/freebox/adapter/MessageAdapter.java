@@ -41,6 +41,10 @@ public class MessageAdapter extends BaseAdapter {
 		// TODO Auto-generated method stub
 		return position;
 	}
+	
+	public void addItem(MessageEntity message){
+		messagelist.add(message);
+	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
@@ -48,7 +52,6 @@ public class MessageAdapter extends BaseAdapter {
 		ViewHolder viewHolder = null;
 		if (convertView == null) {
 			convertView = mInflater.inflate(R.layout.message_item_layout, null);
-
 			viewHolder = new ViewHolder();
 			viewHolder.time = (TextView) convertView
 					.findViewById(R.id.message_time);

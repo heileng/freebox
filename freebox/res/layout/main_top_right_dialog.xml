@@ -14,7 +14,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:background="@drawable/title_function_bg"
+            android:background="#FF4500"
             android:orientation="vertical" >
 
             <LinearLayout

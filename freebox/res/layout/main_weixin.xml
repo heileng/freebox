@@ -3,7 +3,7 @@
     android:id="@+id/mainweixin"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#eee"
+    android:background="@drawable/background"
     android:orientation="vertical" >
 
     <RelativeLayout
@@ -14,14 +14,13 @@
         android:background="@drawable/bottom_bar"
         android:orientation="vertical" >
 
-        <ImageView
+     <ImageView
             android:id="@+id/img_tab_now"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_gravity="bottom"
-            android:scaleType="matrix"
-            android:src="@drawable/tab_bg" />
+            android:scaleType="matrix" />
 
         <LinearLayout
             android:layout_width="fill_parent"
@@ -42,7 +41,7 @@
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:scaleType="matrix"
-                    android:src="@drawable/tab_weixin_pressed" />
+                    android:src="@drawable/tab_weixin_normal" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -132,9 +131,9 @@
                     android:id="@+id/img_settings"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/tab_settings_normal"
                     android:clickable="true"
-                    android:scaleType="matrix"
-                    android:src="@drawable/tab_settings_normal" />
+                    android:scaleType="matrix" />
 
                 <TextView
                     android:layout_width="wrap_content"

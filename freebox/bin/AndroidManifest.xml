@@ -21,6 +21,10 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -45,6 +49,7 @@
             android:theme="@android:style/Theme.NoTitleBar" />
         <activity
             android:name=".Register"
+            android:windowSoftInputMode="adjustPan|stateHidden"
             android:theme="@android:style/Theme.NoTitleBar" />
         <activity
             android:name=".Main"
@@ -53,6 +58,7 @@
         </activity>
         <activity
             android:name=".ChatActivity"
+            android:windowSoftInputMode="adjustPan|stateHidden"
             android:label="@string/chat_activity" >
         </activity>
         <activity
@@ -104,6 +110,76 @@
             android:name=".SearchQuanActivity"
             android:label="@string/info_activity" >
         </activity>
+        
+
+         <activity
+            android:name="com.bairuitech.demo.LoginActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="com.bairuitech.demo.ConfigActivity"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.bairuitech.demo.ConfigActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.bairuitech.demo.VideoConfigActivity"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.bairuitech.demo.VideoConfigActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.bairuitech.demo.HallActivity"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.bairuitech.demo.HallActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.bairuitech.demo.RoomActivity"
+            android:screenOrientation="portrait" >
+			<intent-filter>
+                <action android:name="com.bairuitech.demo.RoomActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.bairuitech.demo.VideoActivity"
+            android:screenOrientation="landscape" >
+            <intent-filter>
+                <action android:name="com.bairuitech.demo.VideoActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.bairuitech.demo.LiveVideoActivity"
+            android:screenOrientation="landscape" >
+            <intent-filter>
+                <action android:name="com.bairuitech.demo.LiveVideoActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="com.bairuitech.demo.VideoCallActivity"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="com.bairuitech.demo.VideoCallActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        
         <!-- push service client -->
         <receiver android:name="com.example.freebox.push.PushMessageReceiver" >
             <intent-filter>
@@ -148,7 +224,7 @@
 
         <meta-data
             android:name="api_key"
-            android:value="qAqftx7uclfsVE75V3YSzaBy" />
+            android:value="FvMS6zO7gogILL2DgV6Gi4tS" />
         <!-- push service end -->
     </application>
 

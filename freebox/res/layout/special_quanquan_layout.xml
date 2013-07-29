@@ -7,51 +7,36 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:background="@drawable/background"
         android:orientation="vertical" >
 
         <TextView
+            android:id="@+id/notice"
             android:layout_width="fill_parent"
-            android:background="#00ffff"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:text="公告：请加入圈圈的同学修改一下名字！！谢谢合作！！"
+            android:layout_height="wrap_content"
+            android:background="@drawable/background_post"
             android:textSize="20sp" />
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:background="#ff00ff"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
             android:layout_weight="1"
             android:orientation="vertical" >
 
-            <TextView
+            <ListView
+                android:id="@+id/lv_quanquan_content"
                 android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/mm_listitem"
-                android:text="name1:我发不了一条信息啊！！！"
-                android:padding="5dp"
-                android:textSize="20sp" />
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:background="@drawable/mm_listitem"
-                android:text="name2:我发不了一条信息啊！！！"
-                android:textSize="20sp" />
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:background="@drawable/mm_listitem"
-                android:text="name2:我发不了一条信息啊！！！"
-                android:textSize="20sp" />
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/mm_listitem"
-                android:padding="5dp"
-                android:text="name2:我发不了一条信息啊！！！"
-                android:textSize="20sp" />
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="45dip"
+                android:layout_marginLeft="10.0dp"
+                android:layout_marginRight="10.0dp"
+                android:cacheColorHint="#0000"
+                android:divider="@android:color/transparent"
+                android:dividerHeight="5dp"
+                android:scrollbarStyle="outsideOverlay"
+                android:scrollbars="none" />
         </LinearLayout>
     </LinearLayout>
 

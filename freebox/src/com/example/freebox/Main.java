@@ -15,7 +15,9 @@ import org.json.JSONObject;
 
 import com.example.freebox.ProfileActivity.DataGetTask;
 import com.example.freebox.adapter.AddressListAdapter;
+import com.example.freebox.adapter.ChatMsgViewAdapter;
 import com.example.freebox.adapter.ContactAdapter;
+import com.example.freebox.adapter.IdeasAdapter;
 import com.example.freebox.adapter.MessageAdapter;
 import com.example.freebox.adapter.QuanQuanAdapter;
 import com.example.freebox.adapter.UniteAdapter;
@@ -24,15 +26,22 @@ import com.example.freebox.connection.APILinkEntity;
 import com.example.freebox.connection.HttpClientEntity;
 import com.example.freebox.data.JSONFriendListItemEntity;
 import com.example.freebox.data.JSONFriendsListEntity;
+import com.example.freebox.data.JSONIdeasItem;
 import com.example.freebox.data.JSONMessageEntity;
 import com.example.freebox.data.JSONQuanQuanListEntity;
 import com.example.freebox.data.JSONQuanQuanListItem;
+import com.example.freebox.entity.ChatMsgEntity;
 import com.example.freebox.entity.MessageEntity;
 import com.example.freebox.entity.QuanQuanEntity;
 import com.example.freebox.entity.UserEntity;
+import com.example.freebox.push.DataHandler;
 import com.example.freebox.ui.SideBar;
+import com.example.freebox.utils.DataBaseHandler;
 import com.example.freebox.utils.DataGetHelper;
 
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -62,6 +71,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -108,6 +118,8 @@ public class Main extends Activity {
 	private int classcount = 0;
 	private int systemcount = 0;
 
+	private List<MessageEntity> mDataArrays = new ArrayList<MessageEntity>();
+
 	// 任务属性
 	private String mTaskFlagMyQuan = "myquanlist";
 	private String mTaskFlagMyFriend = "myfriendlist";
@@ -138,6 +150,12 @@ public class Main extends Activity {
 
 	// ideas搜索界面
 	private GridView flaggrid;
+	private ListView ideaslist;
+	private IdeasAdapter ideaAdapter;
+	private IdeasDataGetTask ideasdatagettask;
+	private Button sendbutton;
+	private EditText ideastext;
+	private ArrayList<JSONIdeasItem> mIdeasList = new ArrayList<JSONIdeasItem>();
 
 	// 圈圈内容
 	private GridView gridListView;
@@ -147,6 +165,11 @@ public class Main extends Activity {
 
 	private UniteAdapter mQuanListAdapter;
 	private ContactAdapter mContactAdapter;
+
+	public Main() {
+		super();
+		DataHandler.MainActivity = this;
+	}
 
 	// private Button mRightBtn;
 	@Override
@@ -196,24 +219,46 @@ public class Main extends Activity {
 		mMessageEntityArrays = mDataGetHelper.initData();
 		mAdapter = new MessageAdapter(this, mMessageEntityArrays);
 		// 消息数字
-		mFriendMSGCountText = (TextView) findViewById(R.id.friends_msg_count_text);
-		mQuanMSGCountText = (TextView) findViewById(R.id.quan_msg_count_text);
-		mCollegeMSGCountText = (TextView) findViewById(R.id.college_msg_count_text);
-		mAcademyMSGCountText = (TextView) findViewById(R.id.academy_msg_count_text);
-		mClassMSGCountText = (TextView) findViewById(R.id.class_msg_count_text);
-		mSystemMSGCountText = (TextView) findViewById(R.id.system_msg_count_text);
-		// mListView = (ListView) view1.findViewById(R.id.message_listview);
+		// mFriendMSGCountText = (TextView)
+		// findViewById(R.id.friends_msg_count_text);
+		// mQuanMSGCountText = (TextView)
+		// findViewById(R.id.quan_msg_count_text);
+		// mCollegeMSGCountText = (TextView)
+		// findViewById(R.id.college_msg_count_text);
+		// mAcademyMSGCountText = (TextView)
+		// findViewById(R.id.academy_msg_count_text);
+		// mClassMSGCountText = (TextView)
+		// findViewById(R.id.class_msg_count_text);
+		// mSystemMSGCountText = (TextView)
+		// findViewById(R.id.system_msg_count_text);
+
+		// 首页界面上的消息队列
+
+		mListView = (ListView) view1.findViewById(R.id.message_listview);
+		setMessageData();
 		// mListView.setAdapter(mAdapter);
-		// //主页面的消息合集列表
-		// mListView.setOnClickListener(new OnClickListener(){
-		//
-		// @Override
-		// public void onClick(View v) {
-		// // TODO Auto-generated method stub
-		//
-		// }
-		//
-		// });
+		mListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+					long arg3) {
+				Intent intent = new Intent();
+				intent.setClass(Main.this, ChatActivity.class);
+				intent.putExtra("chat_type", "two");
+				String stringid = mDataArrays.get(arg2).getName();
+				int id = Integer.parseInt(stringid);
+				String username = new DataBaseHandler(Main.this)
+						.getUserNameById(stringid);
+				Log.i("点击账户", "id:" + id + "用户名:" + username);
+				intent.putExtra("name", username);
+
+				intent.putExtra("user_guid", id);
+				startActivity(intent);
+				Toast.makeText(Main.this, "点击一条信息" + arg2, Toast.LENGTH_SHORT)
+						.show();
+			}
+		});
+		// 主页面的消息合集列表
 		View view2 = mLi.inflate(R.layout.main_tab_address, null);
 		// 通讯录界面控件部分
 		address_back_btn = (Button) view2.findViewById(R.id.btn_back);
@@ -227,7 +272,6 @@ public class Main extends Activity {
 				address_back_btn.setVisibility(View.INVISIBLE);
 				lvAddressGroup.setVisibility(View.VISIBLE);
 			}
-
 		});
 		more_function_btn = (Button) view2.findViewById(R.id.more_function_btn);
 		more_function_btn.setOnClickListener(new OnClickListener() {
@@ -284,11 +328,16 @@ public class Main extends Activity {
 					break;
 				case Flags.MSG_NEW_FRIEND_MESSAGE:
 					friendscount++;
-					mFriendMSGCountText.setText("(" + friendscount + ")");
+					Toast.makeText(Main.this, "收到一条新信息" + friendscount,
+							Toast.LENGTH_LONG).show();
 					break;
 				case Flags.MSG_NEW_QUAN_MESSAGE:
 					quancount++;
-					mQuanMSGCountText.setText("(" + quancount + ")");
+					// mQuanMSGCountText.setText("(" + quancount + ")");
+					break;
+				case Flags.MSG_UPDATE_IDEAS:
+					ideaAdapter = new IdeasAdapter(Main.this, mIdeasList);
+					ideaslist.setAdapter(ideaAdapter);
 					break;
 				}
 			}
@@ -397,8 +446,60 @@ public class Main extends Activity {
 		mWindowManager.addView(mDialogText, lp);
 		indexBar.setTextView(mDialogText);
 		// idea界面
-		View view3 = mLi.inflate(R.layout.main_tab_friends, null);
+		View view3 = mLi.inflate(R.layout.main_tab_ideas, null);
+		sendbutton = (Button) view3.findViewById(R.id.send_ideas_btn);
+		ideastext = (EditText) view3.findViewById(R.id.et_sendideas);
+		sendbutton.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Toast.makeText(Main.this, "发送ideas消息", Toast.LENGTH_SHORT)
+						.show();
+				SendIdeasTask task = new SendIdeasTask();
+				task.execute(APILinkEntity.mBasicAPI);
+
+			}
+
+		});
 		flaggrid = (GridView) view3.findViewById(R.id.flags_grid);
+		flaggrid.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1,
+					int position, long arg3) {
+				// TODO Auto-generated method stub
+				switch (position) {
+				case 0:
+					ideasdatagettask = new IdeasDataGetTask();
+					ideasdatagettask.execute(APILinkEntity.mBasicAPI, "体育");
+					break;
+				case 1:
+					ideasdatagettask = new IdeasDataGetTask();
+					ideasdatagettask.execute(APILinkEntity.mBasicAPI, "美食");
+					break;
+				case 2:
+					ideasdatagettask = new IdeasDataGetTask();
+					ideasdatagettask.execute(APILinkEntity.mBasicAPI, "交友");
+					break;
+				case 3:
+					ideasdatagettask = new IdeasDataGetTask();
+					ideasdatagettask.execute(APILinkEntity.mBasicAPI, "文学");
+					break;
+				case 4:
+					ideasdatagettask = new IdeasDataGetTask();
+					ideasdatagettask.execute(APILinkEntity.mBasicAPI, "电影");
+					break;
+				case 5:
+					ideasdatagettask = new IdeasDataGetTask();
+					ideasdatagettask.execute(APILinkEntity.mBasicAPI, "唱歌");
+					break;
+				}
+
+			}
+		});
+		ideaslist = (ListView) view3.findViewById(R.id.lv_ideas_list);
+		// mAdapter = new MessageAdapter(this, mDataArrays);
 		lstData = new ArrayList<String>();
 		lstData.add("体育");
 		lstData.add("美食");
@@ -414,7 +515,7 @@ public class Main extends Activity {
 		lstData = new ArrayList<String>();
 		lstData.add("游戏圈");
 		lstData.add("音乐圈");
-		lstData.add("电商圈");
+		lstData.add("阅读圈");
 		lstData.add("软件圈");
 		gridviewadapter = new QuanQuanAdapter(this, lstData, false);
 		gridListView.setAdapter(gridviewadapter);
@@ -520,10 +621,6 @@ public class Main extends Activity {
 				}
 				result = mClient.PostData(arg0[0], paramsEntity);
 				mFriendListJsonString = result;
-				Log.i("输出我的好友列表", mFriendListJsonString);
-				// }else if(arg0[1].equals(mTaskFlagMyQuan)){
-				Log.i("第二次token", token);
-
 				// 获取圈圈列表
 				List<NameValuePair> params2 = new ArrayList<NameValuePair>();
 				params2.add(new BasicNameValuePair("method",
@@ -539,7 +636,228 @@ public class Main extends Activity {
 				}
 				result = mClient.PostData(arg0[0], paramsEntity);
 				mQuanListJsonString = result;
-				Log.i("输出我的圈圈列表", result);
+			} catch (ClientProtocolException e) {
+
+				e.printStackTrace();
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			} catch (JSONException e) {
+
+				e.printStackTrace();
+			}
+			return result;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			try {
+				// 好友列表获取
+				JSONObject friendjsonobject = new JSONObject(
+						mFriendListJsonString);
+				// result对象生成
+				String friend_data_list = friendjsonobject.getString("result");
+				JSONObject jsonobject3 = new JSONObject(friend_data_list);
+				String s_flag = jsonobject3.getString("s");
+				mFriendList.clear();
+				if (s_flag.equals("1")) {
+					JSONArray friends_array = jsonobject3.getJSONArray("d");
+					for (int i = 0; i < friends_array.length(); i++) {
+						JSONObject friendjsonitem = friends_array
+								.getJSONObject(i);
+						int id = friendjsonitem.getInt("guid");
+						String name = friendjsonitem.getString("name");
+						String username = friendjsonitem.getString("username");
+						// int avatarnum=friendjsonitem.getInt("avatar");
+						int wonline = friendjsonitem.getInt("wonline");
+						int conline = friendjsonitem.getInt("conline");
+						mFriendItem = new JSONFriendListItemEntity();
+						mFriendItem.setName(name);
+						mFriendItem.setGuid(id);
+						mFriendItem.setUserName(username);
+						mFriendItem.setWonline(wonline);
+						mFriendItem.setConline(conline);
+						// mFriendItem.setAvatarNum(avatarnum);
+						mFriendList.add(mFriendItem);
+						// 将用户信息存入数据库
+						Log.i("存入用户信息", "start");
+						UserEntity userentity = new UserEntity();
+						userentity.setName(name);
+						userentity.setGuid(id);
+						userentity.setUserName(username);
+						userentity.setWonline(wonline);
+						userentity.setConline(conline);
+						new DataBaseHandler(Main.this)
+								.insertToUserTable(userentity);
+						Message message = new Message();
+						message.what = Flags.MSG_SUCCESS_FRIEND;
+						mHandler.sendMessage(message);
+					}
+					mFriendsListEntity.setFriendList(mFriendList);
+				}
+				// 圈圈列表获取
+				JSONObject quanjsonobject = new JSONObject(mQuanListJsonString);
+				// result对象生成
+				String quan_data_list = quanjsonobject.getString("result");
+				JSONObject jsonobject2 = new JSONObject(quan_data_list);
+				String s_flag2 = jsonobject2.getString("s");
+				mQuanList.clear();
+				if (s_flag2.equals("1")) {
+					JSONArray quan_array = jsonobject2.getJSONArray("m");
+					for (int i = 0; i < quan_array.length(); i++) {
+						Log.i("index", "" + i);
+						JSONObject jsonitem = quan_array.getJSONObject(i);
+						int id = jsonitem.getInt("id");
+						String name = jsonitem.getString("name");
+						String tags = jsonitem.getString("tags");
+						int img = jsonitem.getInt("img");
+						mQuanItem = new JSONQuanQuanListItem();
+						mQuanItem.setQuanAvatar(img);
+						mQuanItem.setQuanName(name);
+						mQuanItem.setQuanTag(tags);
+						mQuanItem.setQuanId(id);
+						mQuanList.add(mQuanItem);
+						QuanQuanEntity quanentity = new QuanQuanEntity();
+						Log.i("圈圈item属性", id + name + tags);
+						Message message = new Message();
+						message.what = Flags.MSG_SUCCESS;
+						mHandler.sendMessage(message);
+					}
+					mQuanListEntity.setQuanList(mQuanList);
+				}
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public class IdeasDataGetTask extends AsyncTask<String, String, String> {
+
+		@Override
+		protected String doInBackground(String... arg0) {
+			String result = null;
+			try {
+				// if (arg0[1].equals(mTaskFlagMyFriend)) {
+
+				// 获取好友列表
+				SharedPreferences sharedPreferences = getSharedPreferences(
+						"user_config", Context.MODE_PRIVATE);
+				String token = sharedPreferences
+						.getString("auth_token", "none");
+				Log.i("第二次token", token);
+				List<NameValuePair> params1 = new ArrayList<NameValuePair>();
+				params1.add(new BasicNameValuePair("method",
+						APILinkEntity.mGetIdeaMessageByTag));
+				params1.add(new BasicNameValuePair("api_key", Flags.APIKEY));
+				params1.add(new BasicNameValuePair("APIKey", Flags.APIKEY));
+				params1.add(new BasicNameValuePair("auth_token", token));
+				params1.add(new BasicNameValuePair("token", token));
+				params1.add(new BasicNameValuePair("q", arg0[1]));
+				params1.add(new BasicNameValuePair("o", null));
+				try {
+					paramsEntity = new UrlEncodedFormEntity(params1, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				result = mClient.PostData(arg0[0], paramsEntity);
+			} catch (ClientProtocolException e) {
+
+				e.printStackTrace();
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			} catch (JSONException e) {
+
+				e.printStackTrace();
+			}
+			return result;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			try {
+				// ideas列表获取
+				JSONObject friendjsonobject = new JSONObject(result);
+				// result对象生成
+				String ideas_list = friendjsonobject.getString("result");
+				JSONObject jsonobject = new JSONObject(ideas_list);
+				String s_flag = jsonobject.getString("s");
+				Log.i("输出s_flag", s_flag);
+				mIdeasList.clear();
+				if (s_flag.equals("1")) {
+					JSONArray ideas_array = jsonobject.getJSONArray("d");
+					for (int i = 0; i < ideas_array.length(); i++) {
+						JSONObject ideaitem = ideas_array.getJSONObject(i);
+						int id = ideaitem.getInt("id");
+						String name = ideaitem.getString("name");
+						String username = ideaitem.getString("username");
+						int wonline = ideaitem.getInt("wonline");
+						int conline = ideaitem.getInt("conline");
+						String description = ideaitem.getString("description");
+						JSONIdeasItem idea = new JSONIdeasItem();
+						idea.setId(id);
+						idea.setName(name);
+						idea.setUserName(username);
+						idea.setWonline(wonline);
+						idea.setConline(conline);
+						idea.setDescription(description);
+						mIdeasList.add(idea);
+					}
+				} else {
+					Toast.makeText(Main.this, "还无该标签的ideas信息！！！",
+							Toast.LENGTH_SHORT).show();
+				}
+				Message message = new Message();
+				message.what = Flags.MSG_UPDATE_IDEAS;
+				mHandler.sendMessage(message);
+
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public class SendIdeasTask extends AsyncTask<String, String, String> {
+
+		@Override
+		protected String doInBackground(String... arg0) {
+			String result = null;
+			Log.i("开始后台获取", "开始task");
+			try {
+				// if (arg0[1].equals(mTaskFlagMyFriend)) {
+
+				// 获取好友列表
+				SharedPreferences sharedPreferences = getSharedPreferences(
+						"user_config", Context.MODE_PRIVATE);
+				String token = sharedPreferences
+						.getString("auth_token", "none");
+				String username = sharedPreferences.getString("user_name",
+						"none");
+				Log.i("发布用户名", username);
+				Log.i("第二次token", token);
+				List<NameValuePair> params1 = new ArrayList<NameValuePair>();
+				params1.add(new BasicNameValuePair("method",
+						APILinkEntity.mSendIdeaMessageMethod));
+				params1.add(new BasicNameValuePair("api_key", Flags.APIKEY));
+				params1.add(new BasicNameValuePair("APIKey", Flags.APIKEY));
+				params1.add(new BasicNameValuePair("auth_token", token));
+				params1.add(new BasicNameValuePair("token", token));
+				params1.add(new BasicNameValuePair("u", username));
+				params1.add(new BasicNameValuePair("txt", ideastext.getText()
+						.toString()));
+				try {
+					paramsEntity = new UrlEncodedFormEntity(params1, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				result = mClient.PostData(arg0[0], paramsEntity);
+				mFriendListJsonString = result;
+				Log.i("输出我的好友列表", mFriendListJsonString);
+				// }else if(arg0[1].equals(mTaskFlagMyQuan)){
+				Log.i("第二次token", token);
+
 				// }
 			} catch (ClientProtocolException e) {
 
@@ -567,62 +885,12 @@ public class Main extends Activity {
 				Log.i("输出s_flag", s_flag);
 				mFriendList.clear();
 				if (s_flag.equals("1")) {
-					JSONArray friends_array = jsonobject3.getJSONArray("d");
-					for (int i = 0; i < friends_array.length(); i++) {
-						JSONObject friendjsonitem = friends_array
-								.getJSONObject(i);
-						int id = friendjsonitem.getInt("guid");
-						String name = friendjsonitem.getString("name");
-						String username = friendjsonitem.getString("username");
-						// int avatarnum=friendjsonitem.getInt("avatar");
-						int wonline = friendjsonitem.getInt("wonline");
-						int conline = friendjsonitem.getInt("conline");
-						mFriendItem = new JSONFriendListItemEntity();
-						mFriendItem.setName(name);
-						mFriendItem.setGuid(id);
-						mFriendItem.setUserName(username);
-						mFriendItem.setWonline(wonline);
-						mFriendItem.setConline(conline);
-						// mFriendItem.setAvatarNum(avatarnum);
-						mFriendList.add(mFriendItem);
-						Message message = new Message();
-						message.what = Flags.MSG_SUCCESS_FRIEND;
-						mHandler.sendMessage(message);
-						Toast.makeText(Main.this, "好友列表初始化成功",
-								Toast.LENGTH_SHORT).show();
-					}
-					mFriendsListEntity.setFriendList(mFriendList);
-				}
-				// 圈圈列表获取
-				JSONObject quanjsonobject = new JSONObject(mQuanListJsonString);
-				// result对象生成
-				String quan_data_list = quanjsonobject.getString("result");
-				JSONObject jsonobject2 = new JSONObject(quan_data_list);
-				String s_flag2 = jsonobject2.getString("s");
-				mQuanList.clear();
-				if (s_flag2.equals("1")) {
-					JSONArray quan_array = jsonobject2.getJSONArray("m");
-					for (int i = 0; i < quan_array.length(); i++) {
-						Log.i("index", "" + i);
-						JSONObject jsonitem = quan_array.getJSONObject(i);
-						int id = jsonitem.getInt("id");
-						String name = jsonitem.getString("name");
-						String tags = jsonitem.getString("tags");
-						int img = jsonitem.getInt("img");
-						mQuanItem = new JSONQuanQuanListItem();
-						mQuanItem.setQuanAvatar(img);
-						mQuanItem.setQuanName(name);
-						mQuanItem.setQuanTag(tags);
-						mQuanItem.setQuanId(id);
-						mQuanList.add(mQuanItem);
-						Log.i("圈圈item属性", id + name + tags);
-						Message message = new Message();
-						message.what = Flags.MSG_SUCCESS;
-						mHandler.sendMessage(message);
-						Toast.makeText(Main.this, "获取列表成功", Toast.LENGTH_SHORT)
-								.show();
-					}
-					mQuanListEntity.setQuanList(mQuanList);
+					Toast.makeText(Main.this, "新的ideas发布成功！！！",
+							Toast.LENGTH_SHORT).show();
+					ideastext.setText("");
+				} else {
+					Toast.makeText(Main.this, "Idea发布失败，请重试！！！",
+							Toast.LENGTH_SHORT).show();
 				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
@@ -876,19 +1144,19 @@ public class Main extends Activity {
 	// .show();
 	// }
 
-	public void startchat(View v) { // 小黑 对话界面
-		TextView name = (TextView) v.findViewById(R.id.message_name);
-		String user_name = (String) name.getText();
-		Log.i("输出信息", user_name);
-		Intent intent = new Intent();
-		intent.putExtra("name", user_name);
-		intent.putExtra("chat_type", "two");
-		intent.putExtra("dialog_type", "friend");
-		intent.setClass(Main.this, ChatActivity.class);
-		startActivity(intent);
-		Toast.makeText(getApplicationContext(), "来自" + user_name + "的消息",
-				Toast.LENGTH_LONG).show();
-	}
+	// public void startchat(View v) { // 小黑 对话界面
+	// TextView name = (TextView) v.findViewById(R.id.message_name);
+	// String user_name = (String) name.getText();
+	// Log.i("输出信息", user_name);
+	// Intent intent = new Intent();
+	// intent.putExtra("name", user_name);
+	// intent.putExtra("chat_type", "two");
+	// intent.putExtra("dialog_type", "friend");
+	// intent.setClass(Main.this, ChatActivity.class);
+	// startActivity(intent);
+	// Toast.makeText(getApplicationContext(), "来自" + user_name + "的消息",
+	// Toast.LENGTH_LONG).show();
+	// }
 
 	public void MyProfileEdit(View v) {
 		Intent intent = new Intent();
@@ -896,8 +1164,50 @@ public class Main extends Activity {
 		startActivity(intent);
 	}
 
+	private void setMessageData() {
+		mDataArrays.clear();
+		ArrayList<JSONMessageEntity> messageListEntity = new ArrayList<JSONMessageEntity>();
+		DataBaseHandler databasehandler = new DataBaseHandler(Main.this);
+		messageListEntity = databasehandler.getAllUnreadMessageEntity();
+		// 循环消息列表，找出所有用户
+		// ArrayList<String> sourceArrayList = new ArrayList<String>();
+		// for (int j = 0; j < messageListEntity.size(); j++) {
+		// JSONMessageEntity currentmessage = messageListEntity.get(j);
+		// String messagetype = currentmessage.getType();
+		// if (messagetype.equals("A")) {
+		// }
+		// }
+		for (int i = 0; i < messageListEntity.size(); i++) {
+			MessageEntity entity = new MessageEntity();
+			entity.setTime(messageListEntity.get(i).getTimes());
+			entity.setContent(messageListEntity.get(i).getContent());
+			entity.setName(messageListEntity.get(i).getSources());
+			mDataArrays.add(entity);
+		}
+		mAdapter = new MessageAdapter(this, mDataArrays);
+		mListView.setAdapter(mAdapter);
+		mListView.setSelection(mListView.getCount() - 1);
+	}
+
+	public void makeReceiveSound() {
+		try {
+			Uri notification = RingtoneManager
+					.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+			Ringtone r = RingtoneManager.getRingtone(getApplicationContext(),
+					notification);
+			r.play();
+		} catch (Exception e) {
+		}
+
+	}
+
 	public void setPushMessage(JSONMessageEntity messageentity) {
 		int code = messageentity.getCode();
+		makeReceiveSound();
+		MessageEntity entity = new MessageEntity();
+		// entity.setTime(messageentity.getTimes());
+		entity.setContent(messageentity.getContent());
+		entity.setName(messageentity.getSources());
 		switch (code) {
 		case Flags.MSG_P2P:
 			Message message = new Message();
@@ -916,14 +1226,10 @@ public class Main extends Activity {
 			break;
 		}
 
+		mAdapter.addItem(entity);
+		mAdapter.notifyDataSetChanged();
+		mListView.setSelection(mListView.getCount() - 1);
+
 	}
-	// public void exit_settings(View v) { //退出 伪“对话框”，其实是一个activity
-	// Intent intent = new Intent (MainWeixin.this,ExitFromSettings.class);
-	// startActivity(intent);
-	// }
-	// public void btn_shake(View v) { //手机摇一摇
-	// Intent intent = new Intent (MainWeixin.this,ShakeActivity.class);
-	// startActivity(intent);
-	// }
 
 }

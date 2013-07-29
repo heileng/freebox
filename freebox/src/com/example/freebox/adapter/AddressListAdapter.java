@@ -18,7 +18,7 @@ import android.widget.TextView;
 public class AddressListAdapter extends BaseAdapter {
 	private Context mContext;
 	private String flag;
-	private String[] address_group = { "我的好友", "我的圈圈", "校园圈圈", "学院圈圈", "班级圈圈" };
+	private String[] address_group = { "我的好友", "我的圈圈", "校园圈", "学院圈", "班级圈" };
 	public static String[] quan_profile_group = { "圈圈状态", "圈圈活动", "圈圈号码", "圈圈大佬",
 			"圈圈公告", "圈圈成员" };
 

@@ -1,7 +1,7 @@
 package com.example.freebox.connection;
 
 public class APILinkEntity {
-	public static String mBasicAPI = "http://10.11.246.167/freebox/services/api/rest/json/";
+	public static String mBasicAPI = "http://dm.zstu.edu.cn/freebox/services/api/rest/json/";
 	// ×¢²áÓëÃÜÂë
 	public static String mPasswordResetMethod = "qurp";
 	public static String mPasswordChangeMethod = "qurnp";
@@ -32,7 +32,16 @@ public class APILinkEntity {
 	public static String mPublishAnnouncementMethod = "qqgcga";
 	public static String mPublishActivityMethod = "qgcga";
 	public static String mSearchQuanMethod = "qgsch";
+	public static String mPostQuanAnnouncementMethod="qqgcga";
+	public static String mPostQuanActivityMethod="qgcga";
+	
+	//Ð£Ô°È¦È¦
+	public static String mGetXiaoYuanUserListMethod="qggcm";
+	public static String mGetSpecialAnnouncement="qggoga";
 
+	//IdeaËÑË÷
+	public static String mGetIdeaMessageByTag="qwsch";
+	public static String mSendIdeaMessageMethod="qwisave";
 	// ÏûÏ¢ÍÆËÍ
 	public static String mSendP2PMessageMethod = "qmpua";
 	public static String mSendQuanMessageMethod = "qmpga";

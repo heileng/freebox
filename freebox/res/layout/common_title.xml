@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ly_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/ly_content"
+    android:background="#f0ffff"
     android:orientation="vertical" >
 
     <RelativeLayout
         android:id="@+id/titleview"
         android:layout_width="fill_parent"
-        android:layout_height="45dp"
-        android:background="@drawable/title_bar"
-        android:gravity="center_vertical" >
+        android:layout_height="60dp"
+        android:background="@drawable/title_bar" >
 
         <Button
             android:id="@+id/btn_left"
             android:layout_width="70dp"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginTop="3dp"
             android:background="@drawable/title_btn_back"
             android:onClick="btn_back"
             android:text="返回"
@@ -27,7 +28,8 @@
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="9dp"
             android:text="title"
             android:textColor="#ffffff"
             android:textSize="20sp" />
@@ -37,8 +39,7 @@
             android:layout_width="67dp"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="5dp"
+            android:layout_marginTop="3dp"
             android:background="@drawable/title_btn_right"
             android:src="@drawable/mm_title_btn_menu" />
     </RelativeLayout>

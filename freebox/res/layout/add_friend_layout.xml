@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background"
     android:orientation="vertical" >
 
     <EditText
@@ -12,7 +13,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="25dp"
         android:background="@drawable/login_editbox"
-        android:hint="请输入guid"
+        android:hint="请输入用户手机号"
         android:singleLine="true"
         android:textColor="#000"
         android:textSize="15sp" />
